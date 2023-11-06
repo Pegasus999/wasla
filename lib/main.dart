@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Wasala Andk',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(textTheme: TextTheme(bodyMedium: GoogleFonts.changa())),
-      home: HomePage(),
+      home: PhoneLogin(),
     );
   }
 }

@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:wasla/Constants.dart';
+import 'package:wasla/Models/Shop.dart';
+import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/CarPicker.dart';
 import 'package:wasla/Screens/DestinationPicker.dart';
-import 'package:wasla/Screens/Maps/Carwahes.dart';
-import 'package:wasla/Screens/Maps/Mechanic.dart';
-import 'package:wasla/Screens/Maps/Tolier.dart';
+import 'package:wasla/Screens/Maps/ShopPage.dart';
 import 'package:wasla/Screens/Maps/TowingPage.dart';
 import 'package:wasla/Services/API.dart';
 
+// ignore: must_be_immutable
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  HomePage({super.key, this.user});
+  User? user;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -74,9 +75,13 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w600),
                               ),
-                              Text(
-                                address['formatted_address'] ?? "",
-                                style: TextStyle(fontSize: 14),
+                              SizedBox(
+                                width: 200,
+                                child: Text(
+                                  address['formatted_address'] ?? "",
+                                  style: TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               )
                             ],
                           ),
@@ -130,21 +135,37 @@ class _HomePageState extends State<HomePage> {
                                 "Taxi",
                                 "assets/images/taxi.png",
                                 DestinationPage(
-                                    position: userPosition, location: address)),
+                                  position: userPosition,
+                                  location: address,
+                                  user: widget.user!,
+                                )),
                             _card(
                                 "Towing",
                                 "assets/images/towing.png",
                                 TowingView(
                                   position: userPosition,
                                 )),
-                            _card("CarWash", "assets/images/carwash.png",
-                                CarwashPage(position: userPosition)),
-                            _card("Mechanic", "assets/images/mechanic.png",
-                                MechanicPage(position: userPosition)),
+                            _card(
+                                "CarWash",
+                                "assets/images/carwash.png",
+                                ShopPage(
+                                    position: userPosition,
+                                    type: ShopType.carwash)),
+                            _card(
+                                "Mechanic",
+                                "assets/images/mechanic.png",
+                                ShopPage(
+                                    position: userPosition,
+                                    type: ShopType.mechanic)),
                             _card("Pieces", "assets/images/parts.png",
                                 CarPicker()),
-                            _card("Tolier", "assets/images/tolier.png",
-                                RepairPage(position: userPosition)),
+                            _card(
+                                "Tolier",
+                                "assets/images/tolier.png",
+                                ShopPage(
+                                  position: userPosition,
+                                  type: ShopType.tollier,
+                                )),
                           ],
                         ),
                       )

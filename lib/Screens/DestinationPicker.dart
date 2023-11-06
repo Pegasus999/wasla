@@ -3,14 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wasla/Models/User.dart';
 import 'Maps/TaxiPage.dart';
 import 'package:wasla/Constants.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 
 class DestinationPage extends StatefulWidget {
   const DestinationPage(
-      {super.key, required this.position, required this.location});
+      {super.key,
+      required this.position,
+      required this.location,
+      required this.user});
   final Position? position;
+  final User user;
   final location;
   @override
   State<DestinationPage> createState() => _DestinationPageState();
@@ -294,8 +299,8 @@ class _DestinationPageState extends State<DestinationPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TaxiView(from: result, to: to!),
+                              builder: (context) => TaxiView(
+                                  from: result, to: to!, user: widget.user),
                             ));
                       } else {
                         Navigator.pop(context);
@@ -341,8 +346,11 @@ class _DestinationPageState extends State<DestinationPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  TaxiView(from: from!, to: result),
+                              builder: (context) => TaxiView(
+                                from: from!,
+                                to: result,
+                                user: widget.user,
+                              ),
                             ));
                       } else {
                         Navigator.pop(context);

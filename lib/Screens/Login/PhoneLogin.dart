@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wasla/Constants.dart';
+import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/HomePage.dart';
+import 'package:wasla/Services/API.dart';
 
 class PhoneLogin extends StatefulWidget {
   const PhoneLogin({super.key});
@@ -12,7 +17,50 @@ class PhoneLogin extends StatefulWidget {
 
 class _PhoneLoginState extends State<PhoneLogin> {
   TextEditingController phoneController = TextEditingController();
+  User? user;
   bool loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    skipLogin();
+  }
+
+  skipLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? str = await prefs.getString("user");
+    print(str);
+    if (str != null) {
+      Map<String, dynamic> json = jsonDecode(str);
+      User user = User.fromJson(json);
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              user: user,
+            ),
+          ));
+    }
+  }
+
+  _login() async {
+    final result = await API.login(context, phoneController.text);
+    if (result != null) {
+      setState(() {
+        user = result;
+      });
+      if (user != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        Map<String, dynamic> json = user!.toJson();
+        await prefs.setString("user", jsonEncode(json));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(user: user),
+            ));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,14 +153,11 @@ class _PhoneLoginState extends State<PhoneLogin> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            _login();
                             setState(() {
                               loading = true;
                             });
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePage()));
                           },
                           style: ButtonStyle(
                               backgroundColor: MaterialStatePropertyAll(
