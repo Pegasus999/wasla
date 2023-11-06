@@ -23,18 +23,21 @@ class _PartsStoreState extends State<PartsStore> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Stack(
-        children: [
-          // Your list of parts
-          _buildHorizontalSlide(),
-          // The floating search bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: buildFloatingSearchBar(),
-          ),
-        ],
+      // body: Stack(
+      //   children: [
+      //     // Your list of parts
+      //     _buildHorizontalSlide(),
+      //     // The floating search bar
+      //     Positioned(
+      //       top: 0,
+      //       left: 0,
+      //       right: 0,
+      //       child: buildFloatingSearchBar(),
+      //     ),
+      //   ],
+      // ),
+      body: Center(
+        child: Text("No parts availble yet"),
       ),
     ));
   }

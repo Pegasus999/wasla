@@ -9,9 +9,14 @@ import 'package:wasla/Models/Shop.dart';
 import 'package:wasla/Services/API.dart';
 
 class ShopPage extends StatefulWidget {
-  const ShopPage({super.key, required this.position, required this.type});
+  const ShopPage(
+      {super.key,
+      required this.position,
+      required this.type,
+      required this.wilaya});
   final Position? position;
   final ShopType type;
+  final int wilaya;
   @override
   State<ShopPage> createState() => _ShopPageState();
 }
@@ -34,7 +39,7 @@ class _ShopPageState extends State<ShopPage> {
     setState(() {
       loading = true;
     });
-    List<Shop> list = await API.getShops(25, widget.type);
+    List<Shop> list = await API.getShops(widget.wilaya, widget.type);
     setState(() {
       shops = list;
       if (list.isNotEmpty) {

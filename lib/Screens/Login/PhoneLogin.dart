@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wasla/Constants.dart';
 import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/HomePage.dart';
+import 'package:wasla/Screens/Login/Register.dart';
 import 'package:wasla/Services/API.dart';
 
 class PhoneLogin extends StatefulWidget {
@@ -29,6 +30,8 @@ class _PhoneLoginState extends State<PhoneLogin> {
   skipLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? str = await prefs.getString("user");
+    int? wilayaStr = await prefs.getInt("wilaya");
+
     print(str);
     if (str != null) {
       Map<String, dynamic> json = jsonDecode(str);
@@ -36,9 +39,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(
-              user: user,
-            ),
+            builder: (context) => HomePage(user: user, wilaya: wilayaStr!),
           ));
     }
   }
@@ -57,6 +58,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
             context,
             MaterialPageRoute(
               builder: (context) => HomePage(user: user),
+            ));
+      } else {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RegisterPage(number: phoneController.text),
             ));
       }
     }

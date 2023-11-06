@@ -12,8 +12,9 @@ import 'package:wasla/Services/API.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
-  HomePage({super.key, this.user});
+  HomePage({super.key, this.user, this.wilaya});
   User? user;
+  int? wilaya;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -21,11 +22,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position? userPosition;
   Map<String, dynamic> address = {};
+  int? wilaya = 0;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _handleLocationPermission();
+    setState(() {
+      wilaya = widget.wilaya;
+    });
   }
 
   getUserPosition() async {
@@ -47,6 +52,44 @@ class _HomePageState extends State<HomePage> {
         });
       }
     }
+  }
+
+  showNumberInputDialog(BuildContext context) async {
+    showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Enter a Wilaya'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextFormField(
+                keyboardType: TextInputType.number,
+                onChanged: (text) {
+                  setState(() {
+                    wilaya = int.tryParse(text);
+                  });
+                },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -86,9 +129,12 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           GestureDetector(
-                            onTap: () async {},
+                            onTap: () async {
+                              showNumberInputDialog(context);
+                            },
                             child: CircleAvatar(
                               radius: 25,
+                              child: Center(child: Text(wilaya.toString())),
                             ),
                           )
                         ],
@@ -135,27 +181,30 @@ class _HomePageState extends State<HomePage> {
                                 "Taxi",
                                 "assets/images/taxi.png",
                                 DestinationPage(
-                                  position: userPosition,
-                                  location: address,
-                                  user: widget.user!,
-                                )),
+                                    position: userPosition,
+                                    location: address,
+                                    user: widget.user!,
+                                    wilaya: wilaya!)),
                             _card(
                                 "Towing",
                                 "assets/images/towing.png",
                                 TowingView(
                                   position: userPosition,
+                                  user: widget.user!,
                                 )),
                             _card(
                                 "CarWash",
                                 "assets/images/carwash.png",
                                 ShopPage(
                                     position: userPosition,
+                                    wilaya: wilaya!,
                                     type: ShopType.carwash)),
                             _card(
                                 "Mechanic",
                                 "assets/images/mechanic.png",
                                 ShopPage(
                                     position: userPosition,
+                                    wilaya: wilaya!,
                                     type: ShopType.mechanic)),
                             _card("Pieces", "assets/images/parts.png",
                                 CarPicker()),
@@ -164,6 +213,7 @@ class _HomePageState extends State<HomePage> {
                                 "assets/images/tolier.png",
                                 ShopPage(
                                   position: userPosition,
+                                  wilaya: wilaya!,
                                   type: ShopType.tollier,
                                 )),
                           ],

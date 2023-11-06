@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:lottie/lottie.dart' as lottie;
 import 'package:map_location_picker/map_location_picker.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:wasla/Constants.dart';
+import 'package:wasla/Models/User.dart';
 import 'package:wasla/Services/API.dart';
 
 class TowingView extends StatefulWidget {
-  const TowingView({super.key, required this.position});
+  const TowingView({super.key, required this.position, required this.user});
   final Position? position;
+  final User user;
   @override
   State<TowingView> createState() => TowingViewState();
 }
@@ -28,15 +31,18 @@ class TowingViewState extends State<TowingView>
   Set<Polyline> _polylines = Set<Polyline>();
   List<LatLng> polylineCoordinates = [];
   Set<Marker> _markers = Set<Marker>();
+  late IO.Socket socket;
 
   @override
   void initState() {
+    // TODO: implement initState
+    initSocket();
     super.initState();
     animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1), // Adjust the duration as needed
     );
-
+    setListener();
     getCarImage();
     polylinePoints = PolylinePoints();
     setState(() {
@@ -44,12 +50,40 @@ class TowingViewState extends State<TowingView>
     });
   }
 
-  getNearstTowTruck() async {
-    LatLng position = await API
-        .getNearstTow(LatLng(userPosition!.latitude, userPosition!.longitude));
-    setState(() {
-      towTruck = position;
+  setListener() {
+    socket.on("noTow", (data) {
+      print("data");
     });
+
+    socket.on("driverLocationUpdate", (data) {});
+
+    socket.on("towAccept", (data) {
+      print(data);
+      setState(() {
+        found = true;
+        towTruck = LatLng(data['latitude'], data['longtitude']);
+      });
+    });
+  }
+
+  getDriver() {
+    socket.emit("towRequest", {
+      "firstName": widget.user.firstName,
+      "lastName": widget.user.lastName,
+      "userId": widget.user.id,
+      "pickUpLocationLatitude": userPosition!.latitude,
+      "pickUpLocationLongtitude": userPosition!.longitude
+    });
+  }
+
+  initSocket() async {
+    socket = IO.io("http://172.20.10.5:5000", {
+      "transports": ['websocket'],
+      "autoConnect": false
+    });
+    socket.connect();
+    // socket!.emit("add", widget.user.id);
+    socket.emit("add", {"userId": widget.user.id});
   }
 
   getCarImage() async {
@@ -184,16 +218,7 @@ class TowingViewState extends State<TowingView>
                     agreed = true;
                   });
                   animationController.forward();
-
-                  Future.delayed(
-                    const Duration(seconds: 6),
-                    () {
-                      setState(() {
-                        found = true;
-                      });
-                      getNearstTowTruck();
-                    },
-                  );
+                  getDriver();
                 },
                 child: const Text("Find a Tow-Truck"))
           ],

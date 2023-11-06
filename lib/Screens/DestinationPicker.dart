@@ -13,9 +13,11 @@ class DestinationPage extends StatefulWidget {
       {super.key,
       required this.position,
       required this.location,
+      required this.wilaya,
       required this.user});
   final Position? position;
   final User user;
+  final int wilaya;
   final location;
   @override
   State<DestinationPage> createState() => _DestinationPageState();
@@ -33,6 +35,7 @@ class _DestinationPageState extends State<DestinationPage> {
     super.initState();
     getRecentPlaces();
     getFavoritePlaces();
+    print(widget.wilaya);
     setState(() {
       userPosition = widget.position;
       from = GeocodingResult.fromJson(widget.location);

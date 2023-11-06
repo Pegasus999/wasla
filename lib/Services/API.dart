@@ -22,6 +22,33 @@ class API {
     return LatLng(36.295837, 6.532003);
   }
 
+  static Future register(BuildContext context, String phoneNumber,
+      String firstName, String lastName) async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final url = Uri.parse('${base_url}auth/signUp');
+      final body = jsonEncode({
+        'phoneNumber': phoneNumber.trim(),
+        'firstName': firstName.trim(),
+        'lastName': lastName.trim()
+      });
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        User? user = User.fromJson(json["user"]);
+
+        return user;
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("No such user")));
+      }
+    } catch (err) {
+      print(err);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Error occured")));
+    }
+  }
+
   static Future getAddress(double lat, double lng) async {
     // Replace with your actual API key
     final url =
