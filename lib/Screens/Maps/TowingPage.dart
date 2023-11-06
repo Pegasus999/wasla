@@ -136,11 +136,11 @@ class TowingViewState extends State<TowingView>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.grey,
+        backgroundColor: Constants.background,
         appBar: !found
             ? AppBar(
                 elevation: 0,
-                backgroundColor: Constants.grey,
+                backgroundColor: Constants.background,
                 title: const Text(
                   "Towing",
                 ),

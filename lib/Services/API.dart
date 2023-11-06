@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:map_location_picker/map_location_picker.dart';
 import 'package:wasla/Constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as dom;
@@ -13,14 +12,6 @@ import 'package:wasla/Models/User.dart';
 class API {
   static String url_base = "https://www.autoevolution.com/";
   static String base_url = "http://172.20.10.5:5000/api/";
-
-  static Future<List<LatLng>> getNearbyDrivers(LatLng userPosition) async {
-    return [LatLng(36.2955, 6.5334)];
-  }
-
-  static Future<LatLng> getNearstTow(LatLng userPosition) async {
-    return LatLng(36.295837, 6.532003);
-  }
 
   static Future register(BuildContext context, String phoneNumber,
       String firstName, String lastName) async {

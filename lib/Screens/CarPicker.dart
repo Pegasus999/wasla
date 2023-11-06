@@ -166,19 +166,25 @@ class _CarPickerState extends State<CarPicker> {
                                 )),
                 ),
                 const SizedBox(height: 50),
-                ListPickerField(
-                  label: "Brand",
-                  items: brands,
-                  controller: brand,
+                SizedBox(
+                  width: 350,
+                  child: ListPickerField(
+                    label: "Brand",
+                    items: brands,
+                    controller: brand,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 loading
                     ? Constants.loading
                     : modelsNames.isNotEmpty
-                        ? ListPickerField(
-                            label: "Model",
-                            items: modelsNames,
-                            controller: model,
+                        ? SizedBox(
+                            width: 350,
+                            child: ListPickerField(
+                              label: "Model",
+                              items: modelsNames,
+                              controller: model,
+                            ),
                           )
                         : const SizedBox(),
                 const SizedBox(height: 20),

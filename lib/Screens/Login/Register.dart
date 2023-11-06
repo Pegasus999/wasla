@@ -40,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.grey,
+        backgroundColor: Constants.background,
         body: SingleChildScrollView(
           child: SizedBox(
             height: MediaQuery.of(context).size.height -
@@ -64,7 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     width: MediaQuery.of(context).size.width,
                     height: 500,
                     decoration: BoxDecoration(
-                      color: Constants.darkGrey,
+                      color: Constants.secondary,
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
@@ -78,7 +78,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           "Register",
                           style: TextStyle(
                               fontSize: 24,
-                              color: Constants.grey,
+                              color: Constants.black,
                               fontWeight: FontWeight.w600),
                         ),
                         Flexible(
@@ -87,11 +87,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Constants.grey),
+                                  color: Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: Constants.night,
+                                    color: Constants.black,
                                     fontWeight: FontWeight.bold),
                                 controller: firstNameController,
                                 decoration: InputDecoration(
@@ -101,7 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     hintText: "First name",
                                     hintStyle: TextStyle(
                                         color:
-                                            Constants.night.withOpacity(0.4))),
+                                            Constants.black.withOpacity(0.4))),
                               ),
                             ),
                           ),
@@ -112,11 +112,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Constants.grey),
+                                  color: Constants.secondary),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: Constants.night,
+                                    color: Constants.black,
                                     fontWeight: FontWeight.bold),
                                 controller: lastNameController,
                                 decoration: InputDecoration(
@@ -126,7 +126,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     hintText: "Last name",
                                     hintStyle: TextStyle(
                                         color:
-                                            Constants.night.withOpacity(0.4))),
+                                            Constants.black.withOpacity(0.4))),
                               ),
                             ),
                           ),
@@ -137,12 +137,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Constants.grey),
+                                  color: Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: Constants.night,
+                                    color: Constants.black,
                                     fontWeight: FontWeight.bold),
                                 controller: wilayaController,
                                 decoration: InputDecoration(
@@ -152,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     hintText: "Wilaya (e.g 25)",
                                     hintStyle: TextStyle(
                                         color:
-                                            Constants.night.withOpacity(0.4))),
+                                            Constants.black.withOpacity(0.4))),
                               ),
                             ),
                           ),
@@ -171,8 +171,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               }
                             },
                             style: ButtonStyle(
-                                backgroundColor: MaterialStatePropertyAll(
-                                    Constants.darkYellow),
+                                backgroundColor:
+                                    MaterialStatePropertyAll(Constants.main),
                                 shape: MaterialStatePropertyAll(
                                     RoundedRectangleBorder(
                                         borderRadius:
@@ -186,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Constants.night),
+                                        color: Constants.black),
                                   ),
                           ),
                         )

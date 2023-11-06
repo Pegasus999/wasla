@@ -77,6 +77,18 @@ class _TaxiViewState extends State<TaxiView> {
     });
 
     socket.on('endRide', (data) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Ride ended")));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(),
+          ));
+    });
+
+    socket.on('cancelRide', (data) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Ride canceled")));
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -89,15 +101,10 @@ class _TaxiViewState extends State<TaxiView> {
     if (trip != null) {
       socket.emit("cancelRide", {"tripId": trip!.id});
     }
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ));
   }
 
   initSocket() async {
-    socket = IO.io("http://192.168.169.132:5000", {
+    socket = IO.io("http://172.20.10.5:5000", {
       "transports": ['websocket'],
       "autoConnect": false
     });
@@ -221,55 +228,23 @@ class _TaxiViewState extends State<TaxiView> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: WillPopScope(
-        onWillPop: () async => showExitConfirmationDialog(context),
-        child: Scaffold(
-          body: !requested
-              ? Stack(children: [
-                  Expanded(child: map()),
-                  Positioned(bottom: 0, child: _bottomContainer(context))
-                ])
-              : DraggableBottomSheet(
-                  minExtent: 250,
-                  useSafeArea: false,
-                  curve: Curves.easeIn,
-                  previewWidget: bottomContainer(context),
-                  expandedWidget: expandedContainer(context),
-                  backgroundWidget: map(),
-                  maxExtent: MediaQuery.of(context).size.height * 0.8,
-                  onDragging: (pos) {},
-                ),
-        ),
+      child: Scaffold(
+        body: !requested
+            ? Stack(children: [
+                Expanded(child: map()),
+                Positioned(bottom: 0, child: _bottomContainer(context))
+              ])
+            : DraggableBottomSheet(
+                minExtent: 250,
+                useSafeArea: false,
+                curve: Curves.easeIn,
+                previewWidget: bottomContainer(context),
+                expandedWidget: expandedContainer(context),
+                backgroundWidget: map(),
+                maxExtent: MediaQuery.of(context).size.height * 0.8,
+                onDragging: (pos) {},
+              ),
       ),
-    );
-  }
-
-  showExitConfirmationDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Want to cancel the ride?'),
-          content: Text('Do you want to exit the trip?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(
-                    false); // Dismiss the dialog and prevent the back action.
-              },
-              child: Text('No'),
-            ),
-            TextButton(
-              onPressed: () {
-                cancelRide();
-                Navigator.of(context)
-                    .pop(true); // Dismiss the dialog and allow the back action.
-              },
-              child: Text('Yes'),
-            ),
-          ],
-        );
-      },
     );
   }
 

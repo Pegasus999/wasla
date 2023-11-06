@@ -56,7 +56,7 @@ class _OtpPageState extends State<OtpPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.night,
+        backgroundColor: Constants.background,
         body: SizedBox(
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).padding.top,
@@ -85,10 +85,10 @@ class _OtpPageState extends State<OtpPage> {
         height: 400,
         width: double.infinity,
         decoration: BoxDecoration(
-          border: Border.all(color: Constants.night),
+          border: Border.all(color: Constants.secondaryDarker),
           borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16), topRight: Radius.circular(30)),
-          color: Constants.grey,
+          color: Constants.secondary,
         ),
         child: Column(children: [
           const SizedBox(height: 30),
@@ -122,13 +122,13 @@ class _OtpPageState extends State<OtpPage> {
               height: 45,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
-                  color: Constants.darkYellow),
+                  color: Constants.main),
               child: loading
                   ? Constants.loading
                   : Center(
                       child: Text("Login",
                           style: TextStyle(
-                              color: Constants.darkGrey,
+                              color: Color.fromRGBO(184, 184, 184, 1),
                               fontSize: 14,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -168,8 +168,8 @@ class _OtpPageState extends State<OtpPage> {
         decoration: UnderlineDecoration(
             textStyle: TextStyle(
                 fontSize: 20.0,
-                color: wrongPinEntered ? Colors.red : Constants.night),
-            colorBuilder: FixedColorBuilder(Constants.night)),
+                color: wrongPinEntered ? Colors.red : Constants.black),
+            colorBuilder: FixedColorBuilder(Constants.black)),
         onSubmit: (pin) {
           checkOtp();
         },

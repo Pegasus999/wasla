@@ -70,7 +70,7 @@ class _DestinationPageState extends State<DestinationPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.grey,
+        backgroundColor: Constants.background,
         appBar: AppBar(
           leading: GestureDetector(
               onTap: () => Navigator.pop(context),
@@ -81,7 +81,7 @@ class _DestinationPageState extends State<DestinationPage> {
             style: TextStyle(color: Colors.black),
           ),
           centerTitle: true,
-          backgroundColor: Constants.grey,
+          backgroundColor: Constants.background,
           elevation: 0,
         ),
         body: SingleChildScrollView(

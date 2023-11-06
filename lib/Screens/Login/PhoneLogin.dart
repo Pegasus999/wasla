@@ -73,7 +73,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.grey,
+        backgroundColor: Constants.background,
         body: SizedBox(
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).padding.top,
@@ -96,7 +96,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                   width: MediaQuery.of(context).size.width,
                   height: 200,
                   decoration: BoxDecoration(
-                    color: Constants.darkGrey,
+                    color: Constants.secondary,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -110,7 +110,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                         "Login",
                         style: TextStyle(
                             fontSize: 24,
-                            color: Constants.grey,
+                            color: Constants.black,
                             fontWeight: FontWeight.w600),
                       ),
                       Flexible(
@@ -122,7 +122,8 @@ class _PhoneLoginState extends State<PhoneLogin> {
                               width: 100,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Constants.grey),
+                                  color:
+                                      const Color.fromRGBO(184, 184, 184, 1)),
                               child: const Center(
                                   child: Text(
                                 "+213",
@@ -135,11 +136,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
                               child: Container(
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
-                                    color: Constants.grey),
+                                    color:
+                                        const Color.fromRGBO(184, 184, 184, 1)),
                                 child: TextField(
                                   style: TextStyle(
                                       fontSize: 16,
-                                      color: Constants.night,
+                                      color: Constants.black,
                                       fontWeight: FontWeight.bold),
                                   controller: phoneController,
                                   decoration: InputDecoration(
@@ -149,7 +151,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                               vertical: 16, horizontal: 16),
                                       hintText: "Phone number",
                                       hintStyle: TextStyle(
-                                          color: Constants.night
+                                          color: Constants.black
                                               .withOpacity(0.4))),
                                 ),
                               ),
@@ -167,8 +169,8 @@ class _PhoneLoginState extends State<PhoneLogin> {
                             });
                           },
                           style: ButtonStyle(
-                              backgroundColor: MaterialStatePropertyAll(
-                                  Constants.darkYellow),
+                              backgroundColor:
+                                  MaterialStatePropertyAll(Constants.main),
                               shape: MaterialStatePropertyAll(
                                   RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16))),
@@ -181,7 +183,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                   style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Constants.night),
+                                      color: Color.fromRGBO(184, 184, 184, 1)),
                                 ),
                         ),
                       )

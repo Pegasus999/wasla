@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.grey,
+        backgroundColor: Constants.background,
         body: userPosition != null
             ? SizedBox(
                 height: MediaQuery.of(context).size.height -
@@ -134,7 +134,12 @@ class _HomePageState extends State<HomePage> {
                             },
                             child: CircleAvatar(
                               radius: 25,
-                              child: Center(child: Text(wilaya.toString())),
+                              backgroundColor: Constants.main,
+                              child: Center(
+                                  child: Text(
+                                wilaya.toString(),
+                                style: TextStyle(color: Colors.white),
+                              )),
                             ),
                           )
                         ],
@@ -294,7 +299,7 @@ class _HomePageState extends State<HomePage> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: Constants.night),
+                border: Border.all(color: Constants.black),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Center(child: Image.asset(image)),
