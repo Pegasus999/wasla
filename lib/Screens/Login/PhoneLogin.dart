@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:numberpicker/numberpicker.dart';
 import 'package:wasla/Constants.dart';
 import 'package:wasla/Models/User.dart';
+import 'package:flutter/services.dart';
 import 'package:wasla/Screens/HomePage.dart';
 import 'package:wasla/Screens/Login/Register.dart';
 import 'package:wasla/Services/API.dart';
@@ -20,10 +20,71 @@ class _PhoneLoginState extends State<PhoneLogin> {
   TextEditingController phoneController = TextEditingController();
   User? user;
   bool loading = false;
-
+  int wilaya = 1;
+  List<String> wilayat = [
+    'Adrar',
+    'Chlef',
+    'Laghouat',
+    'Oum El Bouaghi',
+    'Batna',
+    'Béjaïa',
+    'Biskra',
+    'Béchar',
+    'Blida',
+    'Bouïra',
+    'Tamanrasset',
+    'Tébessa',
+    'Tlemcen',
+    'Tiaret',
+    'Tizi Ouzou',
+    'Algiers',
+    'Djelfa',
+    'Jijel',
+    'Sétif',
+    'Saïda',
+    'Skikda',
+    'Sidi Bel Abbès',
+    'Annaba',
+    'Guelma',
+    'Constantine',
+    'Médéa',
+    'Mostaganem',
+    "M'Sila",
+    'Mascara',
+    'Ouargla',
+    'Oran',
+    'El Bayadh',
+    'Illizi',
+    'Bordj Bou Arréridj',
+    'Boumerdès',
+    'El Tarf',
+    'Tindouf',
+    'Tissemsilt',
+    'El Oued',
+    'Khenchela',
+    'Souk Ahras',
+    'Tipaza',
+    'Mila',
+    'Aïn Defla',
+    'Naâma',
+    'Aïn Témouchent',
+    'Ghardaïa',
+    'Relizane',
+    'Timimoun',
+    'Bordj Badji Mokhtar',
+    'Ouled Djellal',
+    'Béni Abbès',
+    'Ain Salah',
+    'Ain Guezzam',
+    'Touggourt',
+    'Djanet',
+    "El M'Ghair",
+    'El Menia'
+  ];
   @override
   void initState() {
     super.initState();
+    Future.delayed(const Duration(seconds: 2), () => showWilayaDialog(context));
     skipLogin();
   }
 
@@ -44,20 +105,33 @@ class _PhoneLoginState extends State<PhoneLogin> {
     }
   }
 
+  showWilayaDialog(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => WilayaPicker(callback: (value) {
+        setState(() {
+          wilaya = value;
+        });
+      }),
+    );
+  }
+
   _login() async {
-    final result = await API.login(context, phoneController.text);
-    if (result != null) {
-      setState(() {
-        user = result;
-      });
-      if (user != null) {
+    try {
+      User? result = await API.login(context, phoneController.text);
+
+      if (result != null) {
+        setState(() {
+          user = result;
+        });
         SharedPreferences prefs = await SharedPreferences.getInstance();
         Map<String, dynamic> json = user!.toJson();
         await prefs.setString("user", jsonEncode(json));
+        await prefs.setInt("wilaya", wilaya);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(user: user),
+              builder: (context) => HomePage(user: user, wilaya: wilaya),
             ));
       } else {
         Navigator.push(
@@ -66,6 +140,15 @@ class _PhoneLoginState extends State<PhoneLogin> {
               builder: (context) => RegisterPage(number: phoneController.text),
             ));
       }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("ERROR"),
+          content:
+              SizedBox(height: 200, child: Center(child: Text(e.toString()))),
+        ),
+      );
     }
   }
 
@@ -122,8 +205,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                               width: 100,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color:
-                                      const Color.fromRGBO(184, 184, 184, 1)),
+                                  color: Colors.white),
                               child: const Center(
                                   child: Text(
                                 "+213",
@@ -136,13 +218,16 @@ class _PhoneLoginState extends State<PhoneLogin> {
                               child: Container(
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
-                                    color:
-                                        const Color.fromRGBO(184, 184, 184, 1)),
+                                    color: Colors.white),
                                 child: TextField(
                                   style: TextStyle(
                                       fontSize: 16,
                                       color: Constants.black,
                                       fontWeight: FontWeight.bold),
+                                  inputFormatters: <TextInputFormatter>[
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(9),
+                                  ],
                                   controller: phoneController,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
@@ -163,10 +248,15 @@ class _PhoneLoginState extends State<PhoneLogin> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: ElevatedButton(
                           onPressed: () async {
-                            _login();
-                            setState(() {
-                              loading = true;
-                            });
+                            if (phoneController.text.length == 9) {
+                              setState(() {
+                                loading = true;
+                              });
+                              _login();
+                              setState(() {
+                                loading = false;
+                              });
+                            }
                           },
                           style: ButtonStyle(
                               backgroundColor:
@@ -195,6 +285,134 @@ class _PhoneLoginState extends State<PhoneLogin> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class WilayaPicker extends StatefulWidget {
+  const WilayaPicker({super.key, required this.callback});
+  final Function(int) callback;
+  @override
+  State<WilayaPicker> createState() => _WilayaPickerState();
+}
+
+class _WilayaPickerState extends State<WilayaPicker> {
+  int wilaya = 1;
+  List<String> wilayat = [
+    'Adrar',
+    'Chlef',
+    'Laghouat',
+    'Oum El Bouaghi',
+    'Batna',
+    'Béjaïa',
+    'Biskra',
+    'Béchar',
+    'Blida',
+    'Bouïra',
+    'Tamanrasset',
+    'Tébessa',
+    'Tlemcen',
+    'Tiaret',
+    'Tizi Ouzou',
+    'Algiers',
+    'Djelfa',
+    'Jijel',
+    'Sétif',
+    'Saïda',
+    'Skikda',
+    'Sidi Bel Abbès',
+    'Annaba',
+    'Guelma',
+    'Constantine',
+    'Médéa',
+    'Mostaganem',
+    "M'Sila",
+    'Mascara',
+    'Ouargla',
+    'Oran',
+    'El Bayadh',
+    'Illizi',
+    'Bordj Bou Arréridj',
+    'Boumerdès',
+    'El Tarf',
+    'Tindouf',
+    'Tissemsilt',
+    'El Oued',
+    'Khenchela',
+    'Souk Ahras',
+    'Tipaza',
+    'Mila',
+    'Aïn Defla',
+    'Naâma',
+    'Aïn Témouchent',
+    'Ghardaïa',
+    'Relizane',
+    'Timimoun',
+    'Bordj Badji Mokhtar',
+    'Ouled Djellal',
+    'Béni Abbès',
+    'Ain Salah',
+    'Ain Guezzam',
+    'Touggourt',
+    'Djanet',
+    "El M'Ghair",
+    'El Menia'
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 250,
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            NumberPicker(
+              value: wilaya,
+              minValue: 1,
+              maxValue: 58,
+              step: 1,
+              itemHeight: 100,
+              axis: Axis.horizontal,
+              onChanged: (value) {
+                setState(() => wilaya = value);
+                widget.callback(value);
+              },
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.black26),
+              ),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () => setState(() {
+                    final newValue = wilaya - 1;
+                    wilaya = newValue.clamp(1, 58);
+                  }),
+                ),
+                const SizedBox(
+                  width: 40,
+                ),
+                Text(
+                  'Wilaya: ${wilayat[wilaya - 1]}',
+                  style: TextStyle(fontSize: 20),
+                ),
+                const SizedBox(
+                  width: 40,
+                ),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () => setState(() {
+                    final newValue = wilaya + 1;
+                    wilaya = newValue.clamp(1, 58);
+                  }),
+                ),
+              ],
+            ),
+          ]),
     );
   }
 }

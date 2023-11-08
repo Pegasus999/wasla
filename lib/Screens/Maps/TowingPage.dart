@@ -77,7 +77,7 @@ class TowingViewState extends State<TowingView>
   }
 
   initSocket() async {
-    socket = IO.io("http://172.20.10.5:5000", {
+    socket = IO.io("https://waslaandk.onrender.com", {
       "transports": ['websocket'],
       "autoConnect": false
     });

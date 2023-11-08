@@ -82,17 +82,47 @@ class _TaxiViewState extends State<TaxiView> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => HomePage(
+              user: widget.user,
+            ),
           ));
     });
 
+    socket.on("noRides", (data) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("No Drivers"),
+          content: SizedBox(
+            height: 200,
+            child: Center(child: Text(data)),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(
+                        user: widget.user,
+                      ),
+                    ));
+              },
+            ),
+          ],
+        ),
+      );
+    });
     socket.on('cancelRide', (data) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Ride canceled")));
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => HomePage(
+              user: widget.user,
+            ),
           ));
     });
   }
@@ -104,7 +134,7 @@ class _TaxiViewState extends State<TaxiView> {
   }
 
   initSocket() async {
-    socket = IO.io("http://172.20.10.5:5000", {
+    socket = IO.io("https://waslaandk.onrender.com", {
       "transports": ['websocket'],
       "autoConnect": false
     });

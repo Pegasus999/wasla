@@ -11,7 +11,7 @@ import 'package:wasla/Models/User.dart';
 
 class API {
   static String url_base = "https://www.autoevolution.com/";
-  static String base_url = "http://172.20.10.5:5000/api/";
+  static String base_url = "https://waslaandk.onrender.com/api/";
 
   static Future register(BuildContext context, String phoneNumber,
       String firstName, String lastName) async {
@@ -29,9 +29,6 @@ class API {
         User? user = User.fromJson(json["user"]);
 
         return user;
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("No such user")));
       }
     } catch (err) {
       print(err);
@@ -59,7 +56,7 @@ class API {
     }
   }
 
-  static Future login(BuildContext context, String phoneNumber) async {
+  static Future<User?> login(BuildContext context, String phoneNumber) async {
     try {
       final headers = {'Content-Type': 'application/json'};
       final url = Uri.parse('${base_url}auth/login');
@@ -73,11 +70,12 @@ class API {
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("No such user")));
+        return null;
       }
     } catch (err) {
       print(err);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Error occured")));
+
+      throw Exception("Error occured");
     }
   }
 

@@ -14,7 +14,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  bool loading = true;
+  bool loading = false;
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController wilayaController = TextEditingController();
@@ -112,7 +112,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Constants.secondary),
+                                  color: Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
@@ -186,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Constants.black),
+                                        color: Colors.white),
                                   ),
                           ),
                         )
