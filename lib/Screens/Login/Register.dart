@@ -20,8 +20,12 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController wilayaController = TextEditingController();
 
   register() async {
-    final response = await API.register(context, widget.number,
-        firstNameController.text, lastNameController.text);
+    final response = await API.register(
+        context,
+        widget.number,
+        firstNameController.text,
+        lastNameController.text,
+        int.parse(wilayaController.text));
     if (response != null) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       Map<String, dynamic> json = response!.toJson();
@@ -87,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Color.fromRGBO(184, 184, 184, 1)),
+                                  color: const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
@@ -112,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Color.fromRGBO(184, 184, 184, 1)),
+                                  color: const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
@@ -137,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: Color.fromRGBO(184, 184, 184, 1)),
+                                  color: const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(
@@ -181,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     MediaQuery.of(context).size.width, 50))),
                             child: loading
                                 ? Constants.loading
-                                : Text(
+                                : const Text(
                                     "Login",
                                     style: TextStyle(
                                         fontSize: 16,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:draggable_bottom_sheet/draggable_bottom_sheet.dart';
 import 'package:lottie/lottie.dart';
 
 class Test extends StatelessWidget {

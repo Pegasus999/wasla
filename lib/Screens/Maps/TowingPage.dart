@@ -7,7 +7,6 @@ import 'package:map_location_picker/map_location_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:wasla/Constants.dart';
 import 'package:wasla/Models/User.dart';
-import 'package:wasla/Services/API.dart';
 
 class TowingView extends StatefulWidget {
   const TowingView({super.key, required this.position, required this.user});
@@ -28,9 +27,9 @@ class TowingViewState extends State<TowingView>
   late BitmapDescriptor carImage;
   Position? userPosition;
   late LatLng towTruck;
-  Set<Polyline> _polylines = Set<Polyline>();
+  final Set<Polyline> _polylines = <Polyline>{};
   List<LatLng> polylineCoordinates = [];
-  Set<Marker> _markers = Set<Marker>();
+  final Set<Marker> _markers = <Marker>{};
   late IO.Socket socket;
 
   @override

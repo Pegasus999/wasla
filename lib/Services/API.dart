@@ -14,14 +14,15 @@ class API {
   static String base_url = "https://waslaandk.onrender.com/api/";
 
   static Future register(BuildContext context, String phoneNumber,
-      String firstName, String lastName) async {
+      String firstName, String lastName, int wilaya) async {
     try {
       final headers = {'Content-Type': 'application/json'};
       final url = Uri.parse('${base_url}auth/signUp');
       final body = jsonEncode({
         'phoneNumber': phoneNumber.trim(),
         'firstName': firstName.trim(),
-        'lastName': lastName.trim()
+        'lastName': lastName.trim(),
+        'wilaya': wilaya
       });
       final response = await http.post(url, headers: headers, body: body);
       if (response.statusCode == 200) {
@@ -131,11 +132,11 @@ class API {
       Map<String, String> brandsMap = {};
       List<Model> models = [];
 
-      list.forEach((item) {
+      for (var item in list) {
         if (!brandsMap.containsKey(item.text)) {
           brandsMap[item.text] = item.attributes["href"]!;
         }
-      });
+      }
 
       // Extract the unique brand names from the hashmap
       List<String> brands = brandsMap.keys.toList();
@@ -144,9 +145,9 @@ class API {
           .where((item) => item.toLowerCase().contains(brand.toLowerCase()))
           .toList();
 
-      filtered.forEach((element) {
+      for (var element in filtered) {
         models.add(Model(name: element, url: brandsMap[element]!));
-      });
+      }
 
       return models;
     }
@@ -175,7 +176,7 @@ class API {
           .getElementsByClassName("inCarList")[0]
           .attributes["src"]!
           .replaceFirst("_thumb", "");
-      return "https://www.auto-data.net/" + src;
+      return "https://www.auto-data.net/$src";
     }
     return "";
   }

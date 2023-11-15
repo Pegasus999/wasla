@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Enter a Wilaya'),
+          title: const Text('Enter a Wilaya'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -75,13 +75,13 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('No'),
+              child: const Text('No'),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             TextButton(
-              child: Text('Yes'),
+              child: const Text('Yes'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -122,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                                 width: 200,
                                 child: Text(
                                   address['formatted_address'] ?? "",
-                                  style: TextStyle(fontSize: 14),
+                                  style: const TextStyle(fontSize: 14),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               )
@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                               child: Center(
                                   child: Text(
                                 wilaya.toString(),
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                               )),
                             ),
                           )
@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                                     wilaya: wilaya!,
                                     type: ShopType.mechanic)),
                             _card("Pieces", "assets/images/parts.png",
-                                CarPicker()),
+                                const CarPicker()),
                             _card(
                                 "Tolier",
                                 "assets/images/tolier.png",
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 10),
           Text(
             label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           )
         ],
       ),

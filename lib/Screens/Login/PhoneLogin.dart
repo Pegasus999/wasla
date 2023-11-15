@@ -84,14 +84,13 @@ class _PhoneLoginState extends State<PhoneLogin> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () => showWilayaDialog(context));
     skipLogin();
   }
 
   skipLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? str = await prefs.getString("user");
-    int? wilayaStr = await prefs.getInt("wilaya");
+    String? str = prefs.getString("user");
+    int? wilayaStr = prefs.getInt("wilaya");
 
     print(str);
     if (str != null) {
@@ -102,6 +101,9 @@ class _PhoneLoginState extends State<PhoneLogin> {
           MaterialPageRoute(
             builder: (context) => HomePage(user: user, wilaya: wilayaStr!),
           ));
+    } else {
+      Future.delayed(
+          const Duration(seconds: 2), () => showWilayaDialog(context));
     }
   }
 
@@ -144,7 +146,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("ERROR"),
+          title: const Text("ERROR"),
           content:
               SizedBox(height: 200, child: Center(child: Text(e.toString()))),
         ),
@@ -268,7 +270,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                   Size(MediaQuery.of(context).size.width, 50))),
                           child: loading
                               ? Constants.loading
-                              : Text(
+                              : const Text(
                                   "Login",
                                   style: TextStyle(
                                       fontSize: 16,
@@ -387,7 +389,7 @@ class _WilayaPickerState extends State<WilayaPicker> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.remove),
+                  icon: const Icon(Icons.remove),
                   onPressed: () => setState(() {
                     final newValue = wilaya - 1;
                     wilaya = newValue.clamp(1, 58);
@@ -398,13 +400,13 @@ class _WilayaPickerState extends State<WilayaPicker> {
                 ),
                 Text(
                   'Wilaya: ${wilayat[wilaya - 1]}',
-                  style: TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 20),
                 ),
                 const SizedBox(
                   width: 40,
                 ),
                 IconButton(
-                  icon: Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                   onPressed: () => setState(() {
                     final newValue = wilaya + 1;
                     wilaya = newValue.clamp(1, 58);

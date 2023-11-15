@@ -26,7 +26,7 @@ class _ShopPageState extends State<ShopPage> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   Shop? selected;
-  Set<Marker> _markers = Set<Marker>();
+  final Set<Marker> _markers = <Marker>{};
   List<Shop> shops = [];
 
   @override
@@ -91,7 +91,7 @@ class _ShopPageState extends State<ShopPage> {
                                     onTap: () {
                                       setState(() {
                                         _markers.add(
-                                          Marker(
+                                          const Marker(
                                               markerId: MarkerId("value"),
                                               position:
                                                   LatLng(36.814652, 7.715008)),
@@ -162,7 +162,7 @@ class _ShopPageState extends State<ShopPage> {
             children: [
               Text(
                 selected!.name,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const Divider(
                 height: 25,
@@ -175,7 +175,7 @@ class _ShopPageState extends State<ShopPage> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Constants.main,
-                    child: FaIcon(
+                    child: const FaIcon(
                       FontAwesomeIcons.phone,
                       color: Colors.white,
                     ),
@@ -185,7 +185,7 @@ class _ShopPageState extends State<ShopPage> {
                     child: CircleAvatar(
                       backgroundColor: Constants.main,
                       radius: 30,
-                      child: FaIcon(
+                      child: const FaIcon(
                         FontAwesomeIcons.route,
                         color: Colors.white,
                       ),

@@ -24,7 +24,7 @@ class _OtpPageState extends State<OtpPage> {
 
   sendOtp() async {
     // var result = await API.sendOtp(context, widget.number);
-    final result = "500";
+    const result = "500";
     if (result == "500") {
       setState(() {
         sid = result;
@@ -121,11 +121,11 @@ class _OtpPageState extends State<OtpPage> {
               width: 300,
               height: 45,
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderRadius: const BorderRadius.all(Radius.circular(16)),
                   color: Constants.main),
               child: loading
                   ? Constants.loading
-                  : Center(
+                  : const Center(
                       child: Text("Login",
                           style: TextStyle(
                               color: Color.fromRGBO(184, 184, 184, 1),

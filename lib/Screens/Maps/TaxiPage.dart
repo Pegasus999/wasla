@@ -12,6 +12,7 @@ import 'package:wasla/Models/Driver.dart';
 import 'package:wasla/Models/Trip.dart';
 import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/HomePage.dart';
+import 'package:wasla/Screens/Login/PhoneLogin.dart';
 
 class TaxiView extends StatefulWidget {
   const TaxiView(
@@ -27,10 +28,10 @@ class _TaxiViewState extends State<TaxiView> {
   Position? userPosition;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-  Set<Polyline> _polylines = Set<Polyline>();
+  Set<Polyline> _polylines = <Polyline>{};
   List<LatLng> polylineCoordinates = [];
   late PolylinePoints polylinePoints;
-  Set<Marker> _markers = Set<Marker>();
+  Set<Marker> _markers = <Marker>{};
   bool loading = true;
   bool requested = false;
   bool found = false;
@@ -99,14 +100,12 @@ class _TaxiViewState extends State<TaxiView> {
           ),
           actions: [
             TextButton(
-              child: Text('Ok'),
+              child: const Text('Ok'),
               onPressed: () {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomePage(
-                        user: widget.user,
-                      ),
+                      builder: (context) => PhoneLogin(),
                     ));
               },
             ),
@@ -222,17 +221,19 @@ class _TaxiViewState extends State<TaxiView> {
       setState(() {
         _markers.addAll([
           Marker(
-              markerId: MarkerId('driver'), position: driver, icon: carImage),
+              markerId: const MarkerId('driver'),
+              position: driver,
+              icon: carImage),
           Marker(
-            markerId: MarkerId('destinationPin'),
+            markerId: const MarkerId('destinationPin'),
             position: LatLng(widget.from.geometry.location.lat,
                 widget.from.geometry.location.lng),
           )
         ]);
         _polylines.add(Polyline(
             width: 10,
-            polylineId: PolylineId('driver'),
-            color: Color(0xFF08A5CB),
+            polylineId: const PolylineId('driver'),
+            color: const Color(0xFF08A5CB),
             points: polylineCoordinates));
       });
     }
@@ -241,13 +242,13 @@ class _TaxiViewState extends State<TaxiView> {
   void showPinsOnMap() {
     setState(() {
       _markers.add(Marker(
-        markerId: MarkerId('sourcePin'),
+        markerId: const MarkerId('sourcePin'),
         position: LatLng(widget.from.geometry.location.lat,
             widget.from.geometry.location.lng),
       ));
 
       _markers.add(Marker(
-        markerId: MarkerId('destinationPin'),
+        markerId: const MarkerId('destinationPin'),
         position: LatLng(
             widget.to.geometry.location.lat, widget.to.geometry.location.lng),
       ));
@@ -261,8 +262,21 @@ class _TaxiViewState extends State<TaxiView> {
       child: Scaffold(
         body: !requested
             ? Stack(children: [
-                Expanded(child: map()),
-                Positioned(bottom: 0, child: _bottomContainer(context))
+                Positioned(
+                  key: Key(
+                      'mapPositioned'), // Add a key to the Positioned widget
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: map(),
+                ),
+                Positioned(
+                  key: Key(
+                      'bottomContainerPositioned'), // Add a key to the Positioned widget
+                  bottom: 0,
+                  child: _bottomContainer(context),
+                ),
               ])
             : DraggableBottomSheet(
                 minExtent: 250,
@@ -314,8 +328,8 @@ class _TaxiViewState extends State<TaxiView> {
             style: GoogleFonts.changa(fontSize: 20),
           ),
           const SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -334,12 +348,14 @@ class _TaxiViewState extends State<TaxiView> {
           const SizedBox(height: 15),
           ElevatedButton(
             onPressed: () {
-              getDriver();
+              if (userPosition != null) {
+                getDriver();
+              }
             },
-            child: Text("Find a Driver"),
             style: ButtonStyle(
                 shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)))),
+            child: const Text("Find a Driver"),
           )
         ],
       ),
@@ -383,7 +399,7 @@ class _TaxiViewState extends State<TaxiView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 30,
             ),
             const SizedBox(width: 20),
@@ -410,7 +426,7 @@ class _TaxiViewState extends State<TaxiView> {
               onTap: () {
                 print(trip!.driverId);
               },
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 25,
                 child: Center(child: FaIcon(FontAwesomeIcons.phone)),
               ),
@@ -449,7 +465,7 @@ class _TaxiViewState extends State<TaxiView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 35,
                 ),
                 const SizedBox(width: 20),
@@ -461,7 +477,7 @@ class _TaxiViewState extends State<TaxiView> {
                     children: [
                       Text(
                         "${trip != null ? trip!.driver!.firstName : ""} ${trip != null ? trip!.driver!.lastName : ""}",
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(
@@ -469,13 +485,13 @@ class _TaxiViewState extends State<TaxiView> {
                       ),
                       Text(
                         "0${trip != null ? trip!.driver!.phoneNumber : ""}",
-                        style: TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16),
                       )
                     ],
                   ),
                 ),
                 const SizedBox(width: 10),
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 25,
                   child: Center(child: FaIcon(FontAwesomeIcons.phone)),
                 ),
@@ -489,12 +505,12 @@ class _TaxiViewState extends State<TaxiView> {
             const SizedBox(height: 30),
             Text(
               "${trip != null ? trip!.driver!.carBrand : ""} ${trip != null ? trip!.driver!.carName : ""}",
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
             Text(
-              "${trip != null ? trip!.driver!.licensePlate : ""}",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              trip != null ? trip!.driver!.licensePlate : "",
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 30),
             const Text(
@@ -504,14 +520,14 @@ class _TaxiViewState extends State<TaxiView> {
             const SizedBox(height: 30),
             Text(
               widget.from.formattedAddress!,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 15),
-            FaIcon(FontAwesomeIcons.arrowDown),
+            const FaIcon(FontAwesomeIcons.arrowDown),
             const SizedBox(height: 15),
             Text(
               widget.to.formattedAddress!,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 30),
             const Text(
@@ -521,7 +537,7 @@ class _TaxiViewState extends State<TaxiView> {
             const SizedBox(height: 15),
             Text(
               "${trip != null ? trip!.cost : ""} DA",
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),
@@ -531,7 +547,7 @@ class _TaxiViewState extends State<TaxiView> {
 
   lookingForDriver() {
     return found
-        ? Center(
+        ? const Center(
             child: Text(
               "Driver Found!! ",
               style: TextStyle(fontSize: 26),

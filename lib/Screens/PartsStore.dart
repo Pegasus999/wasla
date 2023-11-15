@@ -36,7 +36,7 @@ class _PartsStoreState extends State<PartsStore> {
       //     ),
       //   ],
       // ),
-      body: Center(
+      body: const Center(
         child: Text("No parts availble yet"),
       ),
     ));
@@ -54,7 +54,7 @@ class _PartsStoreState extends State<PartsStore> {
               style: TextStyle(fontSize: 20),
             ),
           ),
-          Container(
+          SizedBox(
             height: 500,
             child: ListView.builder(
                 itemBuilder: (context, index) => _tile(index), itemCount: 5),
@@ -85,7 +85,7 @@ class _PartsStoreState extends State<PartsStore> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 200,
                 height: 100,
                 child: Text(
@@ -101,7 +101,7 @@ class _PartsStoreState extends State<PartsStore> {
                   child: Container(
                     width: 100,
                     color: Colors.yellow,
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         "500 Da",
                         style: TextStyle(fontSize: 16),
