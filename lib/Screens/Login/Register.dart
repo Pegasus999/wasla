@@ -7,8 +7,9 @@ import 'package:wasla/Screens/HomePage.dart';
 import 'package:wasla/Services/API.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key, required this.number});
+  const RegisterPage({super.key, required this.number, required this.wilaya});
   final String number;
+  final int? wilaya;
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
@@ -18,6 +19,16 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController wilayaController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.wilaya != null) {
+      setState(() {
+        wilayaController.text = widget.wilaya.toString();
+      });
+    }
+  }
 
   register() async {
     final response = await API.register(
@@ -91,7 +102,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: const Color.fromRGBO(184, 184, 184, 1)),
+                                  color:
+                                      const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
@@ -116,7 +128,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: const Color.fromRGBO(184, 184, 184, 1)),
+                                  color:
+                                      const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 style: TextStyle(
                                     fontSize: 16,
@@ -141,7 +154,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color: const Color.fromRGBO(184, 184, 184, 1)),
+                                  color:
+                                      const Color.fromRGBO(184, 184, 184, 1)),
                               child: TextField(
                                 keyboardType: TextInputType.number,
                                 style: TextStyle(

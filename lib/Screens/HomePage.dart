@@ -6,6 +6,7 @@ import 'package:wasla/Models/Shop.dart';
 import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/CarPicker.dart';
 import 'package:wasla/Screens/DestinationPicker.dart';
+import 'package:wasla/Screens/Login/PhoneLogin.dart';
 import 'package:wasla/Screens/Maps/ShopPage.dart';
 import 'package:wasla/Screens/Maps/TowingPage.dart';
 import 'package:wasla/Services/API.dart';
@@ -54,44 +55,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  showNumberInputDialog(BuildContext context) async {
-    showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Enter a Wilaya'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextFormField(
-                keyboardType: TextInputType.number,
-                onChanged: (text) {
-                  setState(() {
-                    wilaya = int.tryParse(text);
-                  });
-                },
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('No'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Yes'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -130,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           GestureDetector(
                             onTap: () async {
-                              showNumberInputDialog(context);
+                              showWilayaDialog(context);
                             },
                             child: CircleAvatar(
                               radius: 25,
@@ -312,6 +275,17 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
+    );
+  }
+
+  showWilayaDialog(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => WilayaPicker(callback: (value) {
+        setState(() {
+          wilaya = value;
+        });
+      }),
     );
   }
 }

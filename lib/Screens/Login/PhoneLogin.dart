@@ -21,70 +21,11 @@ class _PhoneLoginState extends State<PhoneLogin> {
   User? user;
   bool loading = false;
   int wilaya = 1;
-  List<String> wilayat = [
-    'Adrar',
-    'Chlef',
-    'Laghouat',
-    'Oum El Bouaghi',
-    'Batna',
-    'Béjaïa',
-    'Biskra',
-    'Béchar',
-    'Blida',
-    'Bouïra',
-    'Tamanrasset',
-    'Tébessa',
-    'Tlemcen',
-    'Tiaret',
-    'Tizi Ouzou',
-    'Algiers',
-    'Djelfa',
-    'Jijel',
-    'Sétif',
-    'Saïda',
-    'Skikda',
-    'Sidi Bel Abbès',
-    'Annaba',
-    'Guelma',
-    'Constantine',
-    'Médéa',
-    'Mostaganem',
-    "M'Sila",
-    'Mascara',
-    'Ouargla',
-    'Oran',
-    'El Bayadh',
-    'Illizi',
-    'Bordj Bou Arréridj',
-    'Boumerdès',
-    'El Tarf',
-    'Tindouf',
-    'Tissemsilt',
-    'El Oued',
-    'Khenchela',
-    'Souk Ahras',
-    'Tipaza',
-    'Mila',
-    'Aïn Defla',
-    'Naâma',
-    'Aïn Témouchent',
-    'Ghardaïa',
-    'Relizane',
-    'Timimoun',
-    'Bordj Badji Mokhtar',
-    'Ouled Djellal',
-    'Béni Abbès',
-    'Ain Salah',
-    'Ain Guezzam',
-    'Touggourt',
-    'Djanet',
-    "El M'Ghair",
-    'El Menia'
-  ];
+
   @override
   void initState() {
     super.initState();
-    skipLogin();
+    // skipLogin();
   }
 
   skipLogin() async {
@@ -121,9 +62,10 @@ class _PhoneLoginState extends State<PhoneLogin> {
   _login() async {
     try {
       User? result = await API.login(context, phoneController.text);
-
+      print(result);
       if (result != null) {
         setState(() {
+          loading = false;
           user = result;
         });
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -136,10 +78,16 @@ class _PhoneLoginState extends State<PhoneLogin> {
               builder: (context) => HomePage(user: user, wilaya: wilaya),
             ));
       } else {
+        setState(() {
+          loading = false;
+        });
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RegisterPage(number: phoneController.text),
+              builder: (context) => RegisterPage(
+                number: phoneController.text,
+                wilaya: wilaya,
+              ),
             ));
       }
     } catch (e) {
@@ -255,9 +203,6 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                 loading = true;
                               });
                               _login();
-                              setState(() {
-                                loading = false;
-                              });
                             }
                           },
                           style: ButtonStyle(
