@@ -135,21 +135,14 @@ class _DestinationPageState extends State<DestinationPage> {
                         apiKey: Constants.apiKey,
                         onNext: (GeocodingResult? result) {
                           if (result != null) {
-                            setState(() {
-                              from = result;
-                            });
-                            if (to != null) {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TaxiView(
-                                        from: result,
-                                        to: to!,
-                                        user: widget.user),
-                                  ));
-                            } else {
-                              Navigator.pop(context);
-                            }
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TaxiView(
+                                      from: from!,
+                                      to: result,
+                                      user: widget.user),
+                                ));
                           }
                         },
                         region: 'dz',
