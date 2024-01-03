@@ -141,6 +141,7 @@ class _DestinationPageState extends State<DestinationPage> {
                                   builder: (context) => TaxiView(
                                       from: from!,
                                       to: result,
+                                      wilaya : widget.wilaya,
                                       user: widget.user),
                                 ));
                           }

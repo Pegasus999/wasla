@@ -12,19 +12,27 @@ import 'package:wasla/Models/Driver.dart';
 import 'package:wasla/Models/Trip.dart';
 import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/HomePage.dart';
-import 'package:wasla/Screens/Login/PhoneLogin.dart';
+import 'package:wasla/Services/API.dart';
 
 class TaxiView extends StatefulWidget {
-  const TaxiView(
-      {super.key, required this.from, required this.to, required this.user});
-  final GeocodingResult from;
-  final GeocodingResult to;
+  TaxiView(
+      {super.key,
+      this.from,
+      this.to,
+      required this.user,
+      required this.wilaya,
+      this.trip});
+  GeocodingResult? from;
+  GeocodingResult? to;
   final User user;
+  final Trip? trip;
+  final int wilaya;
   @override
   State<TaxiView> createState() => _TaxiViewState();
 }
 
-class _TaxiViewState extends State<TaxiView> {
+class _TaxiViewState extends State<TaxiView>
+    with SingleTickerProviderStateMixin {
   Position? userPosition;
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
@@ -35,10 +43,21 @@ class _TaxiViewState extends State<TaxiView> {
   bool loading = true;
   bool requested = false;
   bool found = false;
+  Completer<void> _delayCompleter = Completer<void>();
+
+  int cost = 0;
   List<LatLng> drivers = [];
   Trip? trip;
   late BitmapDescriptor carImage;
   late IO.Socket socket;
+  late AnimationController controller;
+  late Animation<double> _animation;
+  @override
+  void dispose() {
+    controller.dispose();
+    socket.disconnect();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -46,28 +65,110 @@ class _TaxiViewState extends State<TaxiView> {
     initSocket();
     super.initState();
     getUserPosition();
-    getCarImage();
-    setListener();
+
     polylinePoints = PolylinePoints();
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    );
+
+    // Define the bouncing animation using Tween
+    _animation = Tween<double>(
+      begin: 0,
+      end: 6,
+    ).animate(
+      CurvedAnimation(
+        parent: controller,
+        curve: Curves.bounceOut,
+      ),
+    );
+
+    // Start the animation
+    controller.repeat(reverse: true);
+    setListener();
+    if (widget.trip == null) {
+      getCarImage();
+      setRidePolylines();
+    } else {
+      if (mounted) {
+        setState(() {
+          trip = widget.trip;
+          found = true;
+          requested = true;
+          loading = false;
+        });
+        getAddress();
+      }
+    }
+  }
+
+  getAddress() async {
+    Map<String, dynamic> fromLoc = await API.getAddress(
+        trip!.pickUpLocationLatitude, trip!.pickUpLocationLongtitude);
+    Map<String, dynamic> toLoc = await API.getAddress(
+        trip!.destinationLatitude, trip!.destinationLongtitude);
+    print(fromLoc);
+    print(toLoc);
+    setState(() {
+      widget.from = GeocodingResult.fromJson(fromLoc);
+      widget.to = GeocodingResult.fromJson(toLoc);
+    });
   }
 
   setListener() {
     socket.on("added", (data) {
       print("we connected");
     });
-    socket.on("rideAccept", (data) {
-      Trip result = Trip.fromJson(data['trip']);
-      setState(() {
-        trip = result;
-        found = true;
-      });
-      Future.delayed(const Duration(milliseconds: 500), () {
+
+    socket.on("tripCreated", (data) {
+      if (mounted) {
+        print(data['trip']);
+        Trip result = Trip.fromJson(data['trip']);
         setState(() {
-          loading = false;
+          setState(() {
+            trip = result;
+          });
         });
-      });
-      setDriverPolylines(
-          LatLng(trip!.driver!.latitude, trip!.driver!.longtitude));
+      }
+    });
+
+    socket.on("error", (data) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: const Text("Error"),
+            content: const SizedBox(
+              height: 50,
+              child: Text('An error occured, please check your internet'),
+            ),
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    socket.connect();
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Retry"))
+            ]),
+      );
+    });
+    socket.on("rideAccept", (data) {
+      if (mounted) {
+        Trip result = Trip.fromJson(data['trip']);
+        setState(() {
+          trip = result;
+          found = true;
+        });
+        if (!_delayCompleter.isCompleted) {
+          _delayCompleter.complete();
+        }
+        Future.delayed(const Duration(milliseconds: 500), () {
+          setState(() {
+            loading = false;
+          });
+        });
+        setDriverPolylines(
+            LatLng(trip!.driver!.latitude, trip!.driver!.longtitude));
+      }
     });
     socket.on("driverLocationUpdate", (data) {
       setState(() {
@@ -77,84 +178,216 @@ class _TaxiViewState extends State<TaxiView> {
           LatLng(trip!.driver!.latitude, trip!.driver!.longtitude));
     });
 
-    socket.on('endRide', (data) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Ride ended")));
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              user: widget.user,
+    socket.on('rideEnd', (data) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Ride ended"),
+            content: SizedBox(
+              height: 100,
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text("Ride has Ended"),
+                    const SizedBox(height: 40),
+                    Text("Your total is : ${trip!.cost} DA")
+                  ]),
             ),
-          ));
+            actions: [
+              TextButton(
+                child: const Text('Ok'),
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(
+                        user: widget.user,
+                      ),
+                    ),
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
+          ),
+        ).then(
+          (value) {
+            if (value == null) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomePage(
+                    user: widget.user,
+                  ),
+                ),
+                (route) => false,
+              );
+            }
+          },
+        );
+      }
     });
 
     socket.on("noRides", (data) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("No Drivers"),
-          content: SizedBox(
-            height: 200,
-            child: Center(child: Text(data)),
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("No Drivers"),
+            content: SizedBox(
+              height: 200,
+              child: Center(child: Text(data)),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Ok'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              child: const Text('Ok'),
-              onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PhoneLogin(),
-                    ));
-              },
-            ),
-          ],
-        ),
-      );
+        ).then((value) => Navigator.of(context).pop());
+      }
     });
-    socket.on('cancelRide', (data) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Ride canceled")));
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              user: widget.user,
+    socket.on('rideCancel', (data) {
+      if (mounted && data['byWho'] != widget.user.id) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Ride Cancelled"),
+            content: const SizedBox(
+              height: 50,
+              child: Text("Sadly, your driver has cancelled your ride"),
             ),
-          ));
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(
+                          user: widget.user,
+                        ),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text("OK"))
+            ],
+          ),
+        ).then((value) => Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(
+                  user: widget.user,
+                ),
+              ),
+              (route) => false,
+            ));
+      }
     });
   }
 
   cancelRide() {
     if (trip != null) {
-      socket.emit("cancelRide", {"tripId": trip!.id});
+      socket.emit("rideCancel", {"tripId": trip!.id, "userId": widget.user.id});
     }
   }
 
   initSocket() async {
-    socket = IO.io("https://waslaandk.onrender.com", {
+    // socket = IO.io("https://waslaandk.onrender.com", {
+    //   "transports": ['websocket'],
+    //   "autoConnect": false
+    // });
+    print("before");
+    socket = IO.io("http://192.168.1.2:5000", {
       "transports": ['websocket'],
       "autoConnect": false
     });
+
     socket.connect();
-    // socket!.emit("add", widget.user.id);
+
     socket.emit("add", {"userId": widget.user.id});
+  }
+
+  int calculateCost(List<LatLng> polylineCoordinates) {
+    double totalDistance = 0.0;
+
+    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
+      final LatLng p1 = polylineCoordinates[i];
+      final LatLng p2 = polylineCoordinates[i + 1];
+      final distance = Geolocator.distanceBetween(
+        p1.latitude,
+        p1.longitude,
+        p2.latitude,
+        p2.longitude,
+      );
+      totalDistance += distance;
+    }
+    double distanceInKm = totalDistance / 1000;
+    double distanceXcost = distanceInKm * 35;
+    print(distanceXcost.toInt());
+    return distanceXcost.toInt();
   }
 
   getDriver() async {
     setState(() {
       requested = true;
     });
-    socket.emit("rideRequest", {
-      "wilaya": 25,
-      "userId": widget.user.id,
-      "cost": 300,
-      "destinationLatitude": widget.to.geometry.location.lat,
-      "destinationLongtitude": widget.to.geometry.location.lng,
-      "pickUpLocationLatitude": widget.from.geometry.location.lat,
-      "pickUpLocationLongtitude": widget.from.geometry.location.lng
-    });
+    _delayCompleter = Completer<void>();
+    // TODO: Change this delay
+    Future.delayed(
+      const Duration(minutes: 3),
+      () {
+        if (!found && mounted && !_delayCompleter.isCompleted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("No Drivers"),
+              content: const SizedBox(
+                height: 60,
+                child: Center(
+                    child: Text("Sadly, No driver has picked up your order")),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ).then((value) => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomePage(
+                    user: widget.user,
+                  ),
+                ),
+                (route) => false,
+              ));
+        }
+      },
+    );
+    try {
+      socket.emit("rideRequest", {
+        "wilaya": widget.wilaya,
+        "userId": widget.user.id,
+        "cost": cost,
+        "destinationLatitude": widget.to!.geometry.location.lat,
+        "destinationLongtitude": widget.to!.geometry.location.lng,
+        "pickUpLocationLatitude": widget.from!.geometry.location.lat,
+        "pickUpLocationLongtitude": widget.from!.geometry.location.lng
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   getCarImage() async {
@@ -167,32 +400,37 @@ class _TaxiViewState extends State<TaxiView> {
 
   getUserPosition() async {
     Position location = await Geolocator.getCurrentPosition();
-    setState(() {
-      userPosition = location;
-    });
+    if (mounted) {
+      setState(() {
+        userPosition = location;
+      });
+    }
   }
 
   void setRidePolylines() async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       Constants.apiKey,
+      PointLatLng(widget.from!.geometry.location.lat,
+          widget.from!.geometry.location.lng),
       PointLatLng(
-          widget.from.geometry.location.lat, widget.from.geometry.location.lng),
-      PointLatLng(
-          widget.to.geometry.location.lat, widget.to.geometry.location.lng),
+          widget.to!.geometry.location.lat, widget.to!.geometry.location.lng),
     );
 
     if (result.status == 'OK') {
       for (var point in result.points) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       }
-
-      setState(() {
-        _polylines.add(Polyline(
-            width: 10,
-            polylineId: const PolylineId('polyLine'),
-            color: const Color(0xFF08A5CB),
-            points: polylineCoordinates));
-      });
+      int amount = calculateCost(polylineCoordinates);
+      if (mounted) {
+        setState(() {
+          cost = amount;
+          _polylines.add(Polyline(
+              width: 10,
+              polylineId: const PolylineId('polyLine'),
+              color: const Color(0xFF08A5CB),
+              points: polylineCoordinates));
+        });
+      }
     }
   }
 
@@ -209,8 +447,8 @@ class _TaxiViewState extends State<TaxiView> {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       Constants.apiKey,
       PointLatLng(driver.latitude, driver.longitude),
-      PointLatLng(
-          widget.from.geometry.location.lat, widget.from.geometry.location.lng),
+      PointLatLng(widget.from!.geometry.location.lat,
+          widget.from!.geometry.location.lng),
     );
 
     if (result.status == 'OK') {
@@ -226,8 +464,8 @@ class _TaxiViewState extends State<TaxiView> {
               icon: carImage),
           Marker(
             markerId: const MarkerId('destinationPin'),
-            position: LatLng(widget.from.geometry.location.lat,
-                widget.from.geometry.location.lng),
+            position: LatLng(widget.from!.geometry.location.lat,
+                widget.from!.geometry.location.lng),
           )
         ]);
         _polylines.add(Polyline(
@@ -243,51 +481,119 @@ class _TaxiViewState extends State<TaxiView> {
     setState(() {
       _markers.add(Marker(
         markerId: const MarkerId('sourcePin'),
-        position: LatLng(widget.from.geometry.location.lat,
-            widget.from.geometry.location.lng),
+        position: LatLng(widget.from!.geometry.location.lat,
+            widget.from!.geometry.location.lng),
       ));
 
       _markers.add(Marker(
         markerId: const MarkerId('destinationPin'),
         position: LatLng(
-            widget.to.geometry.location.lat, widget.to.geometry.location.lng),
+            widget.to!.geometry.location.lat, widget.to!.geometry.location.lng),
       ));
     });
   }
+
   // giyrufuohfouy
+  Future<bool> showCancelDialog() async {
+    // showDialog implementation...
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Order"),
+        content: const SizedBox(
+          height: 70,
+          child:
+              Center(child: Text("Are you sure you want to cancel this ride?")),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('No'),
+            onPressed: () {
+              Navigator.pop(context, false);
+            },
+          ),
+          TextButton(
+            child: const Text('Yes'),
+            onPressed: () {
+              cancelRide();
+              setState(() {
+                trip = null;
+                requested = false;
+                found = false;
+              });
+              if (!_delayCompleter.isCompleted) {
+                _delayCompleter.complete();
+              }
+              resetMap();
+              setRidePolylines();
+
+              Navigator.pop(context, true);
+            },
+          ),
+        ],
+      ),
+    );
+
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        body: !requested
-            ? Stack(children: [
-                Positioned(
-                  key: Key(
-                      'mapPositioned'), // Add a key to the Positioned widget
-                  top: 0,
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: map(),
-                ),
-                Positioned(
-                  key: Key(
-                      'bottomContainerPositioned'), // Add a key to the Positioned widget
-                  bottom: 0,
-                  child: _bottomContainer(context),
-                ),
-              ])
-            : DraggableBottomSheet(
-                minExtent: 250,
-                useSafeArea: false,
-                curve: Curves.easeIn,
-                previewWidget: bottomContainer(context),
-                expandedWidget: expandedContainer(context),
-                backgroundWidget: map(),
-                maxExtent: MediaQuery.of(context).size.height * 0.8,
-                onDragging: (pos) {},
-              ),
+      child: WillPopScope(
+        onWillPop: () async {
+          if (requested) {
+            return showCancelDialog();
+          } else {
+            return false;
+          }
+        },
+        child: Scaffold(
+            floatingActionButton: Container(
+              margin: const EdgeInsets.only(top: 20),
+              child: FloatingActionButton(
+                  onPressed: () async {
+                    if (requested) {
+                      bool back = await showCancelDialog();
+                      if (back) {
+                        Navigator.pop(context);
+                      }
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const FaIcon(FontAwesomeIcons.xmark)),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
+            body: trip != null && trip!.driver != null
+                ? DraggableBottomSheet(
+                    minExtent: 200,
+                    useSafeArea: false,
+                    curve: Curves.easeIn,
+                    previewWidget: bottomContainer(context),
+                    expandedWidget: expandedContainer(context),
+                    backgroundWidget: map(),
+                    maxExtent: MediaQuery.of(context).size.height * 0.8,
+                    onDragging: (pos) {},
+                  )
+                : Stack(children: [
+                    Positioned(
+                      key: const Key(
+                          'mapPositioned'), // Add a key to the Positioned widget
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: map(),
+                    ),
+                    Positioned(
+                      key: const Key(
+                          'bottomContainerPositioned'), // Add a key to the Positioned widget
+                      bottom: 0,
+                      child: _bottomContainer(context),
+                    ),
+                  ])),
       ),
     );
   }
@@ -302,77 +608,96 @@ class _TaxiViewState extends State<TaxiView> {
                 target: LatLng(userPosition!.latitude, userPosition!.longitude),
                 zoom: 15),
             onMapCreated: (controller) {
-              _controller.complete(controller);
-              showPinsOnMap();
+              if (!_controller.isCompleted) {
+                _controller.complete(controller);
+              }
+              if (widget.trip == null) {
+                showPinsOnMap();
+              }
             },
           )
         : Constants.loading;
   }
 
-  Container _bottomContainer(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 200,
-      decoration: const BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          color: Colors.white),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            "Your Ride",
-            style: GoogleFonts.changa(fontSize: 20),
-          ),
-          const SizedBox(height: 15),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  _bottomContainer(BuildContext context) {
+    return requested
+        ? Container(
+            width: MediaQuery.of(context).size.width,
+            height: 150,
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+                color: Colors.white),
+            child: lookingForDriver())
+        : Container(
+            width: MediaQuery.of(context).size.width,
+            height: 200,
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+                color: Colors.white),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  "Price : ",
-                  style: TextStyle(fontSize: 16),
+                  "Your Ride",
+                  style: GoogleFonts.changa(fontSize: 20),
                 ),
-                Text(
-                  "300 Da",
-                  style: TextStyle(fontSize: 16),
+                const SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Price : ",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        "${cost == 0 ? "Calculating..." : '$cost Da'} ",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () {
+                    if (userPosition != null && cost != 0) {
+                      getDriver();
+                    }
+                  },
+                  style: ButtonStyle(
+                      backgroundColor: cost == 0
+                          ? MaterialStatePropertyAll(
+                              Colors.blue.withOpacity(0.4))
+                          : const MaterialStatePropertyAll(Colors.blue),
+                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)))),
+                  child: const Text("Find a Driver"),
+                )
               ],
             ),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton(
-            onPressed: () {
-              if (userPosition != null) {
-                getDriver();
-              }
-            },
-            style: ButtonStyle(
-                shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)))),
-            child: const Text("Find a Driver"),
-          )
-        ],
-      ),
-    );
+          );
   }
 
   bottomContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: 150,
+      height: 140,
       decoration: const BoxDecoration(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
           color: Colors.white),
-      child: loading ? lookingForDriver() : driverPreview(),
+      child: driverPreview(),
     );
   }
 
@@ -385,14 +710,28 @@ class _TaxiViewState extends State<TaxiView> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            FaIcon(FontAwesomeIcons.arrowUp, color: Colors.blueGrey[200]),
-            const SizedBox(width: 5),
+            AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return Transform.translate(
+                      offset: Offset(0, _animation.value),
+                      child: FaIcon(FontAwesomeIcons.arrowUp,
+                          color: Colors.blueGrey[200]));
+                }),
+            const SizedBox(width: 15),
             const Text(
               "Your Driver",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(width: 5),
-            FaIcon(FontAwesomeIcons.arrowUp, color: Colors.blueGrey[200]),
+            const SizedBox(width: 15),
+            AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return Transform.translate(
+                      offset: Offset(0, _animation.value),
+                      child: FaIcon(FontAwesomeIcons.arrowUp,
+                          color: Colors.blueGrey[200]));
+                }),
           ],
         ),
         const SizedBox(height: 25),
@@ -428,16 +767,17 @@ class _TaxiViewState extends State<TaxiView> {
               },
               child: const CircleAvatar(
                 radius: 25,
-                child: Center(child: FaIcon(FontAwesomeIcons.phone)),
+                backgroundColor: Colors.green,
+                child: Center(
+                    child: FaIcon(
+                  FontAwesomeIcons.phone,
+                  color: Colors.white,
+                )),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 5),
-        FaIcon(
-          FontAwesomeIcons.angleDown,
-          color: Colors.black.withOpacity(0.3),
-        )
+        const SizedBox(height: 40),
       ],
     );
   }
@@ -476,7 +816,7 @@ class _TaxiViewState extends State<TaxiView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${trip != null ? trip!.driver!.firstName : ""} ${trip != null ? trip!.driver!.lastName : ""}",
+                        "${trip!.driver != null ? trip!.driver!.firstName : ""} ${trip!.driver != null ? trip!.driver!.lastName : ""}",
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
@@ -484,7 +824,7 @@ class _TaxiViewState extends State<TaxiView> {
                         height: 5,
                       ),
                       Text(
-                        "0${trip != null ? trip!.driver!.phoneNumber : ""}",
+                        "0${trip!.driver != null ? trip!.driver!.phoneNumber : ""}",
                         style: const TextStyle(fontSize: 16),
                       )
                     ],
@@ -504,12 +844,12 @@ class _TaxiViewState extends State<TaxiView> {
             ),
             const SizedBox(height: 30),
             Text(
-              "${trip != null ? trip!.driver!.carBrand : ""} ${trip != null ? trip!.driver!.carName : ""}",
+              "${trip!.driver != null ? trip!.driver!.carBrand : ""} ${trip!.driver != null ? trip!.driver!.carName : ""}",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),
             Text(
-              trip != null ? trip!.driver!.licensePlate : "",
+              trip!.driver != null ? trip!.driver!.licensePlate : "",
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 30),
@@ -519,14 +859,14 @@ class _TaxiViewState extends State<TaxiView> {
             ),
             const SizedBox(height: 30),
             Text(
-              widget.from.formattedAddress!,
+              widget.to != null ? widget.to!.formattedAddress! : "",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 15),
             const FaIcon(FontAwesomeIcons.arrowDown),
             const SizedBox(height: 15),
             Text(
-              widget.to.formattedAddress!,
+              widget.to != null ? widget.to!.formattedAddress! : "",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 30),
@@ -536,7 +876,7 @@ class _TaxiViewState extends State<TaxiView> {
             ),
             const SizedBox(height: 15),
             Text(
-              "${trip != null ? trip!.cost : ""} DA",
+              "${trip!.driver != null ? trip!.cost : ""} DA",
               style: const TextStyle(fontSize: 16),
             ),
           ],

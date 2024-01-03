@@ -11,7 +11,8 @@ import 'package:wasla/Models/User.dart';
 
 class API {
   static String url_base = "https://www.autoevolution.com/";
-  static String base_url = "https://waslaandk.onrender.com/api/";
+  // static String base_url = "https://waslaandk.onrender.com/api/";
+  static String base_url = "http://192.168.1.2:5000/api/";
 
   static Future register(BuildContext context, String phoneNumber,
       String firstName, String lastName, int wilaya) async {
@@ -39,21 +40,22 @@ class API {
   }
 
   static Future getAddress(double lat, double lng) async {
-    // Replace with your actual API key
-    final url =
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constants.apiKey}';
+    try {
+      // Replace with your actual API key
+      final url =
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constants.apiKey}';
 
-    final response = await http.get(Uri.parse(url));
+      print(url);
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      if (json['status'] == 'OK') {
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
         return json['results'][0];
-      } else {
-        return 'Error: Unable to fetch address';
       }
-    } else {
-      return 'Error: HTTP request failed';
+      return {"error": "Error getting the address"};
+    } catch (e) {
+      print(e);
+      return {"error": "Error getting the address"};
     }
   }
 

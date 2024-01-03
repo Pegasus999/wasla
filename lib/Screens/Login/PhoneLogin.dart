@@ -25,22 +25,21 @@ class _PhoneLoginState extends State<PhoneLogin> {
   @override
   void initState() {
     super.initState();
-    // skipLogin();
+    skipLogin();
   }
 
   skipLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? str = prefs.getString("user");
-    int? wilayaStr = prefs.getInt("wilaya");
 
-    print(str);
     if (str != null) {
       Map<String, dynamic> json = jsonDecode(str);
       User user = User.fromJson(json);
+
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(user: user, wilaya: wilayaStr!),
+            builder: (context) => HomePage(user: user),
           ));
     } else {
       Future.delayed(
@@ -75,7 +74,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(user: user, wilaya: wilaya),
+              builder: (context) => HomePage(user: user!),
             ));
       } else {
         setState(() {
@@ -244,7 +243,7 @@ class WilayaPicker extends StatefulWidget {
 }
 
 class _WilayaPickerState extends State<WilayaPicker> {
-  int wilaya = 1;
+  int wilaya = 25;
   List<String> wilayat = [
     'Adrar',
     'Chlef',

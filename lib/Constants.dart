@@ -10,7 +10,7 @@ class Constants {
   static Color background = const Color.fromRGBO(235, 235, 235, 1);
   static Color black = const Color.fromRGBO(51, 51, 51, 1);
 
-  static String apiKey = "AIzaSyASO5mgA_JBDA-MtJMg50m_bVjZy2f32jk";
+  static String apiKey = "AIzaSyCU0tk4IKjnadlWWgBGYp95nQsLe1-dedU";
   static List<Color> kDefaultRainbowColors = const [
     Colors.red,
     Colors.orange,

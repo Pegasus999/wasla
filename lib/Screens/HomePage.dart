@@ -1,21 +1,30 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:map_location_picker/map_location_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wasla/Constants.dart';
 import 'package:wasla/Models/Shop.dart';
+import 'package:wasla/Models/Trip.dart';
 import 'package:wasla/Models/User.dart';
 import 'package:wasla/Screens/CarPicker.dart';
 import 'package:wasla/Screens/DestinationPicker.dart';
 import 'package:wasla/Screens/Login/PhoneLogin.dart';
 import 'package:wasla/Screens/Maps/ShopPage.dart';
+import 'package:wasla/Screens/Maps/TaxiPage.dart';
 import 'package:wasla/Screens/Maps/TowingPage.dart';
 import 'package:wasla/Services/API.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
-  HomePage({super.key, this.user, this.wilaya});
-  User? user;
-  int? wilaya;
+  HomePage({super.key, required this.user});
+  User user;
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -23,15 +32,101 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position? userPosition;
   Map<String, dynamic> address = {};
-  int? wilaya = 0;
+  int wilaya = 0;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _handleLocationPermission();
-    setState(() {
-      wilaya = widget.wilaya;
-    });
+    checkTrip();
+    getWilaya();
+    checkPosition();
+  }
+
+  checkTrip() async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      final url = Uri.parse('${API.base_url}client/checkTrip');
+      final body = jsonEncode({'userId': widget.user.id});
+      final response = await http.post(url, headers: headers, body: body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        Trip trip = Trip.fromJson(json['trip']);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TaxiView(user: widget.user, wilaya: wilaya, trip: trip),
+            ),
+            (route) => false);
+      }
+    } catch (e) {
+      print(e);
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: const Text("Error"),
+            content: const SizedBox(
+              height: 50,
+              child: Text('An error occured, please check your internet'),
+            ),
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    checkTrip();
+                  },
+                  child: const Text("Retry"))
+            ]),
+      );
+    }
+  }
+
+  getWilaya() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? number = prefs.getInt("wilaya");
+    if (number != null) {
+      setState(() {
+        wilaya = number;
+      });
+    } else {
+      showWilayaDialog(context);
+    }
+  }
+
+  checkPosition() {
+    Future.delayed(
+      const Duration(seconds: 40),
+      () {
+        if (userPosition == null) {
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text("Error Occured"),
+                content: const SizedBox(
+                    height: 60,
+                    child: Center(
+                      child: Text(
+                          "Please check your internet connection and turn on your GPS location"),
+                    )),
+                actions: [
+                  ElevatedButton(
+                      onPressed: () {
+                        Future.delayed(const Duration(seconds: 10), () {
+                          getUserPosition();
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Retry"))
+                ],
+              ),
+            );
+            checkPosition();
+          }
+        }
+      },
+    );
   }
 
   getUserPosition() async {
@@ -43,15 +138,17 @@ class _HomePageState extends State<HomePage> {
         // Handle any errors that may occur when getting the location.
         print("Error getting user location: $e");
       }
+
       Map<String, dynamic> result =
           await API.getAddress(location!.latitude, location.longitude);
-
-      if (mounted) {
-        setState(() {
-          userPosition = location!;
-          address = result;
-        });
-      }
+      if (result['error'] == null) {
+        if (mounted) {
+          setState(() {
+            userPosition = location!;
+            address = result;
+          });
+        }
+      } else {}
     }
   }
 
@@ -137,55 +234,79 @@ class _HomePageState extends State<HomePage> {
                         height: 20,
                       ),
                       Expanded(
-                        child: GridView(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                  childAspectRatio: 1.1,
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10),
-                          children: [
-                            _card(
-                                "Taxi",
-                                "assets/images/taxi.png",
-                                DestinationPage(
-                                    position: userPosition,
-                                    location: address,
-                                    user: widget.user!,
-                                    wilaya: wilaya!)),
-                            _card(
-                                "Towing",
-                                "assets/images/towing.png",
-                                TowingView(
-                                  position: userPosition,
-                                  user: widget.user!,
-                                )),
-                            _card(
-                                "CarWash",
-                                "assets/images/carwash.png",
-                                ShopPage(
-                                    position: userPosition,
-                                    wilaya: wilaya!,
-                                    type: ShopType.carwash)),
-                            _card(
-                                "Mechanic",
-                                "assets/images/mechanic.png",
-                                ShopPage(
-                                    position: userPosition,
-                                    wilaya: wilaya!,
-                                    type: ShopType.mechanic)),
-                            _card("Pieces", "assets/images/parts.png",
-                                const CarPicker()),
-                            _card(
-                                "Tolier",
-                                "assets/images/tolier.png",
-                                ShopPage(
-                                  position: userPosition,
-                                  wilaya: wilaya!,
-                                  type: ShopType.tollier,
-                                )),
-                          ],
-                        ),
+                        child: GestureDetector(
+                            onTap: () async {
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setInt("wilaya", wilaya);
+                            },
+                            child: GridView(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                      childAspectRatio: 1.1,
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10),
+                              children: [
+                                _card(
+                                    "Taxi",
+                                    "assets/images/taxi.png",
+                                    DestinationPage(
+                                        position: userPosition,
+                                        location: address,
+                                        user: widget.user,
+                                        wilaya: wilaya)),
+                                _card(
+                                    "Towing",
+                                    "assets/images/towing.png",
+                                    TowingView(
+                                      position: userPosition,
+                                      user: widget.user,
+                                    )),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _card(
+                                    "CarWash",
+                                    "assets/images/carwash.png",
+                                    ShopPage(
+                                        position: userPosition,
+                                        wilaya: wilaya,
+                                        type: ShopType.carwash),
+                                  ),
+                                ),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _card(
+                                    "Mechanic",
+                                    "assets/images/mechanic.png",
+                                    ShopPage(
+                                        position: userPosition,
+                                        wilaya: wilaya,
+                                        type: ShopType.mechanic),
+                                  ),
+                                ),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _card(
+                                    "Pieces",
+                                    "assets/images/parts.png",
+                                    const CarPicker(),
+                                  ),
+                                ),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _card(
+                                    "Tolier",
+                                    "assets/images/tolier.png",
+                                    ShopPage(
+                                      position: userPosition,
+                                      wilaya: wilaya,
+                                      type: ShopType.tollier,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )),
                       )
                     ],
                   ),
@@ -218,8 +339,6 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               'Location services are disabled. Please enable the services')));
-      Future.delayed(
-          const Duration(seconds: 30), () => _handleLocationPermission());
       return false;
     }
     permission = await Geolocator.checkPermission();
@@ -228,8 +347,6 @@ class _HomePageState extends State<HomePage> {
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Location permissions are denied')));
-        Future.delayed(
-            const Duration(seconds: 2), () => _handleLocationPermission());
         return false;
       }
     }
@@ -237,8 +354,6 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               'Location permissions are permanently denied, please enable it from settings.')));
-      Future.delayed(
-          const Duration(seconds: 2), () => _handleLocationPermission());
       return false;
     }
     getUserPosition();
@@ -248,12 +363,14 @@ class _HomePageState extends State<HomePage> {
   _card(String label, String image, Widget widget) {
     return GestureDetector(
       onTap: () {
-        if (userPosition != null) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => widget,
-              ));
+        if (label == "Taxi" || label == "Towing") {
+          if (userPosition != null) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => widget,
+                ));
+          }
         }
       },
       child: Column(
@@ -285,7 +402,13 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           wilaya = value;
         });
+        saveWilaya(value);
       }),
     );
   }
+}
+
+saveWilaya(int value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setInt("wilaya", value);
 }

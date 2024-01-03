@@ -45,8 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(
-                user: response, wilaya: int.parse(wilayaController.text)),
+            builder: (context) => HomePage(user: response),
           ));
     }
   }

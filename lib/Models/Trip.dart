@@ -9,6 +9,7 @@ class Trip {
   double destinationLatitude = 0;
   double destinationLongtitude = 0;
   Driver? driver;
+  String state;
   int cost = 0;
   Trip(
       {required this.id,
@@ -18,6 +19,7 @@ class Trip {
       required this.cost,
       required this.destinationLatitude,
       required this.destinationLongtitude,
+      required this.state,
       this.driverId,
       this.driver});
 
@@ -28,7 +30,8 @@ class Trip {
         destinationLatitude: json['destinationLatitude'],
         destinationLongtitude: json['destinationLongtitude'],
         id: json['id'],
-        driver: Driver.fromJson(json['driver']),
+        state: json['state'],
+        driver: json['driver'] != null ? Driver.fromJson(json['driver']) : null,
         pickUpLocationLatitude: json['pickUpLocationLatitude'],
         pickUpLocationLongtitude: json['pickUpLocationLongtitude'],
         driverId: json['driverId']);
