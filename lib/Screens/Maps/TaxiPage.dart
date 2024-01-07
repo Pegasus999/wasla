@@ -19,6 +19,7 @@ class TaxiView extends StatefulWidget {
       {super.key,
       this.from,
       this.to,
+      
       required this.user,
       required this.wilaya,
       this.trip});

@@ -22,9 +22,9 @@ import 'package:wasla/Services/API.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
-  HomePage({super.key, required this.user});
+  HomePage({super.key, required this.user, this.wilaya});
   User user;
-
+  final int? wilaya;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
 
   checkPosition() {
     Future.delayed(
-      const Duration(seconds: 40),
+      const Duration(seconds: 20),
       () {
         if (userPosition == null) {
           if (mounted) {

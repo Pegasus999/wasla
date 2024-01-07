@@ -74,7 +74,10 @@ class _PhoneLoginState extends State<PhoneLogin> {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePage(user: user!),
+              builder: (context) => HomePage(
+                user: user!,
+                wilaya: wilaya,
+              ),
             ));
       } else {
         setState(() {
@@ -105,7 +108,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.background,
+        backgroundColor: Constants.secondaryDarker,
         body: SizedBox(
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).padding.top,
@@ -169,6 +172,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                     borderRadius: BorderRadius.circular(16),
                                     color: Colors.white),
                                 child: TextField(
+                                  keyboardType: TextInputType.number,
                                   style: TextStyle(
                                       fontSize: 16,
                                       color: Constants.black,
@@ -178,6 +182,9 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                     LengthLimitingTextInputFormatter(9),
                                   ],
                                   controller: phoneController,
+                                  onChanged: (value) => setState(() {
+                                    phoneController.text = value;
+                                  }),
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       contentPadding:
@@ -205,8 +212,10 @@ class _PhoneLoginState extends State<PhoneLogin> {
                             }
                           },
                           style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStatePropertyAll(Constants.main),
+                              backgroundColor: MaterialStatePropertyAll(
+                                  phoneController.text.length == 9
+                                      ? Constants.main
+                                      : Constants.main.withOpacity(0.4)),
                               shape: MaterialStatePropertyAll(
                                   RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16))),
@@ -219,7 +228,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                                   style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Color.fromRGBO(184, 184, 184, 1)),
+                                      color: Colors.white),
                                 ),
                         ),
                       )
