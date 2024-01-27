@@ -19,7 +19,6 @@ class TaxiView extends StatefulWidget {
       {super.key,
       this.from,
       this.to,
-      
       required this.user,
       required this.wilaya,
       this.trip});
@@ -300,12 +299,7 @@ class _TaxiViewState extends State<TaxiView>
   }
 
   initSocket() async {
-    // socket = IO.io("https://waslaandk.onrender.com", {
-    //   "transports": ['websocket'],
-    //   "autoConnect": false
-    // });
-    print("before");
-    socket = IO.io("http://192.168.1.2:5000", {
+    socket = IO.io("https://wasla.online", {
       "transports": ['websocket'],
       "autoConnect": false
     });

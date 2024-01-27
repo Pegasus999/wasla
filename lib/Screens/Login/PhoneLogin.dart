@@ -20,12 +20,12 @@ class _PhoneLoginState extends State<PhoneLogin> {
   TextEditingController phoneController = TextEditingController();
   User? user;
   bool loading = false;
-  int wilaya = 1;
+  int wilaya = 25;
 
   @override
   void initState() {
     super.initState();
-    skipLogin();
+    // skipLogin();
   }
 
   skipLogin() async {
@@ -108,7 +108,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Constants.secondaryDarker,
+        backgroundColor: Constants.background,
         body: SizedBox(
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).padding.top,
@@ -131,7 +131,7 @@ class _PhoneLoginState extends State<PhoneLogin> {
                   width: MediaQuery.of(context).size.width,
                   height: 200,
                   decoration: BoxDecoration(
-                    color: Constants.secondary,
+                    color: Constants.greenPop,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
@@ -214,8 +214,8 @@ class _PhoneLoginState extends State<PhoneLogin> {
                           style: ButtonStyle(
                               backgroundColor: MaterialStatePropertyAll(
                                   phoneController.text.length == 9
-                                      ? Constants.main
-                                      : Constants.main.withOpacity(0.4)),
+                                      ? Constants.orangePop
+                                      : Constants.orangePop.withOpacity(0.4)),
                               shape: MaterialStatePropertyAll(
                                   RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16))),

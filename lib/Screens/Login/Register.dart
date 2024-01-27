@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -18,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool loading = false;
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
-  TextEditingController wilayaController = TextEditingController();
+  TextEditingController wilayaController = TextEditingController(text: "25");
 
   @override
   void initState() {
@@ -78,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     width: MediaQuery.of(context).size.width,
                     height: 500,
                     decoration: BoxDecoration(
-                      color: Constants.secondary,
+                      color: Constants.greenPop,
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
@@ -101,9 +103,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color:
-                                      const Color.fromRGBO(184, 184, 184, 1)),
+                                  color: Colors.white),
                               child: TextField(
+                                onChanged: (value) => {
+                                  setState(() {
+                                    firstNameController.text = value;
+                                  })
+                                },
                                 style: TextStyle(
                                     fontSize: 16,
                                     color: Constants.black,
@@ -127,9 +133,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color:
-                                      const Color.fromRGBO(184, 184, 184, 1)),
+                                  color: Colors.white),
                               child: TextField(
+                                onChanged: (value) => {
+                                  setState(() {
+                                    lastNameController.text = value;
+                                  })
+                                },
                                 style: TextStyle(
                                     fontSize: 16,
                                     color: Constants.black,
@@ -153,10 +163,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
-                                  color:
-                                      const Color.fromRGBO(184, 184, 184, 1)),
+                                  color: Colors.white),
                               child: TextField(
                                 keyboardType: TextInputType.number,
+                                onChanged: (value) => setState(() {
+                                  wilayaController.text = value;
+                                }),
                                 style: TextStyle(
                                     fontSize: 16,
                                     color: Constants.black,
@@ -181,15 +193,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               setState(() {
                                 loading = true;
                               });
-                              if (firstNameController.text.isNotEmpty &&
-                                  lastNameController.text.isNotEmpty &&
-                                  int.tryParse(wilayaController.text) != null) {
+                              if (_check()) {
                                 register();
                               }
                             },
                             style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStatePropertyAll(Constants.main),
+                                backgroundColor: MaterialStatePropertyAll(
+                                    _check()
+                                        ? Constants.orangePop
+                                        : Constants.orangePop.withOpacity(0.4)),
                                 shape: MaterialStatePropertyAll(
                                     RoundedRectangleBorder(
                                         borderRadius:
@@ -217,5 +229,15 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  _check() {
+    if (firstNameController.text.isNotEmpty &&
+        lastNameController.text.isNotEmpty &&
+        wilayaController.text.isNotEmpty &&
+        wilayaController.text.length == 2) {
+      return true;
+    }
+    return false;
   }
 }

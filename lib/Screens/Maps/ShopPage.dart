@@ -153,8 +153,8 @@ class _ShopPageState extends State<ShopPage> {
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
             ),
-            border: Border.all(color: Constants.secondaryDarker),
-            color: Constants.secondary,
+            border: Border.all(color: Constants.orangePop),
+            color: Constants.greenPop,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -162,7 +162,8 @@ class _ShopPageState extends State<ShopPage> {
             children: [
               Text(
                 selected!.name,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const Divider(
                 height: 25,
@@ -174,7 +175,7 @@ class _ShopPageState extends State<ShopPage> {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundColor: Constants.main,
+                    backgroundColor: Constants.orangeLight,
                     child: const FaIcon(
                       FontAwesomeIcons.phone,
                       color: Colors.white,
@@ -183,7 +184,7 @@ class _ShopPageState extends State<ShopPage> {
                   GestureDetector(
                     onTap: () => openGoogleMaps(),
                     child: CircleAvatar(
-                      backgroundColor: Constants.main,
+                      backgroundColor: Constants.greenPop,
                       radius: 30,
                       child: const FaIcon(
                         FontAwesomeIcons.route,

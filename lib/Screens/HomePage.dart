@@ -194,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                             },
                             child: CircleAvatar(
                               radius: 25,
-                              backgroundColor: Constants.main,
+                              backgroundColor: Constants.orangePop,
                               child: Center(
                                   child: Text(
                                 wilaya.toString(),
@@ -256,13 +256,17 @@ class _HomePageState extends State<HomePage> {
                                         location: address,
                                         user: widget.user,
                                         wilaya: wilaya)),
-                                _card(
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _card(
                                     "Towing",
                                     "assets/images/towing.png",
                                     TowingView(
                                       position: userPosition,
                                       user: widget.user,
-                                    )),
+                                    ),
+                                  ),
+                                ),
                                 Opacity(
                                   opacity: 0.5,
                                   child: _card(
@@ -363,7 +367,7 @@ class _HomePageState extends State<HomePage> {
   _card(String label, String image, Widget widget) {
     return GestureDetector(
       onTap: () {
-        if (label == "Taxi" || label == "Towing") {
+        if (label == "Taxi") {
           if (userPosition != null) {
             Navigator.push(
                 context,
