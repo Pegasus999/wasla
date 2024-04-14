@@ -300,7 +300,7 @@ class _HomePageState extends State<HomePage> {
                                 Opacity(
                                   opacity: 0.5,
                                   child: _card(
-                                    "Tolier",
+                                    "Technician",
                                     "assets/images/tolier.png",
                                     ShopPage(
                                       position: userPosition,

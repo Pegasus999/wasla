@@ -1,4 +1,4 @@
-package com.wasla.wasla
+package com.wasla.waslaandk
 
 import io.flutter.embedding.android.FlutterActivity
 
