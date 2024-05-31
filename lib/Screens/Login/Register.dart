@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool loading = false;
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
-  TextEditingController wilayaController = TextEditingController(text: "25");
+  TextEditingController wilayaController = TextEditingController();
 
   @override
   void initState() {

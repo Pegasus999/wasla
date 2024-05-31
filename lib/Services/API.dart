@@ -11,7 +11,8 @@ import 'package:wasla/Models/User.dart';
 
 class API {
   static String url_base = "https://www.autoevolution.com/";
-  static String base_url = "https://wasla.online/api/";
+  // static String base_url = "https://wasla.online/api/";
+  static String base_url = "http://192.168.1.43:5000/api/";
 
   static Future register(BuildContext context, String phoneNumber,
       String firstName, String lastName, int wilaya) async {
