@@ -11,8 +11,19 @@ import 'package:wasla/Models/User.dart';
 
 class API {
   static String url_base = "https://www.autoevolution.com/";
-  // static String base_url = "https://wasla.online/api/";
-  static String base_url = "http://192.168.1.43:5000/api/";
+  static String base_url = "";
+  static Future<void> setBaseUrl() async {
+    try {
+      final response =
+          await http.get(Uri.parse("https://pegadev.surge.sh/wasla.json"));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        base_url = json["server_url"] + "/api/";
+      }
+    } catch (err) {
+      print(err);
+    }
+  }
 
   static Future register(BuildContext context, String phoneNumber,
       String firstName, String lastName, int wilaya) async {

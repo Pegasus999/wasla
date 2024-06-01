@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wasla/Screens/Login/PhoneLogin.dart';
+import 'package:wasla/Services/API.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await API.setBaseUrl();
   runApp(const MyApp());
 }
 

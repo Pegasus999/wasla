@@ -7,6 +7,7 @@ import 'package:map_location_picker/map_location_picker.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:wasla/Constants.dart';
 import 'package:wasla/Models/User.dart';
+import 'package:wasla/Services/API.dart';
 
 class TowingView extends StatefulWidget {
   const TowingView({super.key, required this.position, required this.user});
@@ -76,7 +77,7 @@ class TowingViewState extends State<TowingView>
   }
 
   initSocket() async {
-    socket = IO.io("https://waslaandk.onrender.com", {
+    socket = IO.io(API.base_url.split("/api")[0], {
       "transports": ['websocket'],
       "autoConnect": false
     });

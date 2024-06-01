@@ -299,7 +299,7 @@ class _TaxiViewState extends State<TaxiView>
   }
 
   initSocket() async {
-    socket = IO.io("https://wasla.online", {
+    socket = IO.io(API.base_url.split("/api")[0], {
       "transports": ['websocket'],
       "autoConnect": false
     });
